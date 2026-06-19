@@ -13,7 +13,7 @@ Atualmente este repositorio contem somente as entregas das Sprints 0 e 1:
 
 Nao ha implementacao funcional (frontend/backend) nesta versao do repositorio.
 
-## 1. Contexto do Problema e Solucao
+## 1. CONTEXTO DO PROBLEMA E SOLUCAO
 
 ### Problema
 
@@ -24,7 +24,7 @@ Empresas de locacao enfrentam problemas recorrentes:
 - pouca rastreabilidade de alteracoes e historico
 - retrabalho operacional e baixa visibilidade gerencial
 
-### Solucao Proposta
+### Descricao da solucao
 
 O Alug foi definido para ser um sistema web que centraliza o ciclo de locacao, cobrindo:
 
@@ -33,11 +33,13 @@ O Alug foi definido para ser um sistema web que centraliza o ciclo de locacao, c
 - acompanhamento de disponibilidade e status
 - apoio a decisao com consultas e indicadores
 
-## 2. Instrucoes para Uso
+Quando implementado, o sistema devera permitir o cadastro de clientes e itens, criacao e acompanhamento de contratos de locacao e controle do ciclo de atendimento por interface web.
+
+## 2. INSTRUCOES PARA USO
 
 Como o projeto ainda esta em fase de prototipacao (Sprints 0 e 1), o uso atual e documental.
 
-### 2.1 Como baixar
+### 2.1 Como baixar o projeto
 
 Opcao 1 (Git):
 
@@ -58,33 +60,97 @@ Opcao 2 (ZIP):
 - Leia os artefatos em Padroes Adotados
 - Consulte este README para contexto e planejamento tecnico
 
-## 3. Instrucoes para DEVs
+### 2.3 Instalar e rodar a aplicacao
 
-Estas instrucoes preparam um DEV para evoluir o projeto a partir da base documental atual.
+No estado atual (Sprints 0 e 1), ainda nao existe aplicacao executavel.
 
-### 3.1 Clonar o projeto
+Assim que o codigo for publicado nas proximas sprints, o fluxo esperado para qualquer colega subir na maquina sera:
+
+```bash
+docker compose up --build -d
+```
+
+E o acesso previsto no navegador sera:
+
+- Frontend: http://localhost:5173
+- Backend: http://localhost:8080
+
+### 2.4 Banco de dados
+
+O banco planejado e MySQL com migracoes Flyway no backend Spring Boot.
+
+No estado atual, nao ha script de criacao/execucao de banco publicado porque o backend ainda nao foi implementado.
+
+## 3. INSTRUCOES PARA DEVS
+
+Estas instrucoes seguem o modelo solicitado e preparam um DEV para evoluir o projeto a partir da base documental atual.
+
+### 3.1 Clone o projeto na sua maquina aplicando o comando
 
 ```bash
 git clone https://github.com/ArtKingOfNothing/Alug.git
 cd Alug
 ```
 
-### 3.2 Estado atual
+Voce tambem pode baixar o ZIP no GitHub (Code > Download ZIP), extrair e abrir a pasta local.
+
+### 3.2 Execute o comando para instalar bibliotecas e outras dependencias
+
+No estado atual, ainda nao ha modulos de frontend/backend para instalar dependencias.
+
+Comandos planejados para a fase de implementacao:
+
+```bash
+# Frontend (React + TypeScript)
+cd frontend
+npm install
+
+# Backend (Spring Boot)
+cd ../backend
+./mvnw clean install
+```
+
+No Windows, para backend:
+
+```bash
+mvnw.cmd clean install
+```
+
+### 3.3 Para executar o projeto, va para a pasta X e execute o comando
+
+No estado atual, a execucao ainda nao e possivel porque o codigo nao foi implementado.
+
+Fluxo previsto para a sprint de implementacao:
+
+```bash
+# Backend
+cd backend
+./mvnw spring-boot:run
+
+# Frontend
+cd frontend
+npm run dev
+```
+
+Depois, acessar no browser:
+
+- http://localhost:5173
+- http://localhost:8080
+
+### Situacao atual do repositorio
 
 - ainda nao existe modulo frontend implementado
 - ainda nao existe modulo backend implementado
 - ainda nao existe pipeline de build/test/deploy configurado
 
-### 3.3 Proximo passo tecnico previsto
-
-Quando a Sprint de implementacao iniciar, a arquitetura planejada e:
+Proximo passo tecnico previsto:
 
 - Front: React + TypeScript
 - Back: Spring Boot
 - Banco: MySQL com Flyway
 - Containerizacao: Docker
 
-## 4. Tecnologias
+## 4. TECNOLOGIAS
 
 ### Tecnologias planejadas para implementacao
 
@@ -99,7 +165,7 @@ Quando a Sprint de implementacao iniciar, a arquitetura planejada e:
 - Git e GitHub para versionamento
 - Documentacao de requisitos e modelagem (arquivos em Requisitos e Padroes Adotados)
 
-## 5. Organizacao do Projeto
+## 5. ORGANIZACAO DO PROJETO
 
 Estrutura atual do repositorio:
 
