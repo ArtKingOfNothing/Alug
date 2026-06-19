@@ -180,7 +180,7 @@ Alug/
 
 As versoes publicadas representam marcos das sprints iniciais.
 
-- v0.1: entrega inicial da fase de levantamento/prototipacao
-- v1.0: consolidacao documental das Sprints 0 e 1
+- 0.1: Sprint 0 (README e organizacao inicial)
+- 1.0: Sprint 1 (atualizacoes de requisitos/rastreabilidade do backlog)
 
 Observacao: estas versoes ainda nao representam um produto executavel.
