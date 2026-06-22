@@ -24,7 +24,7 @@ const screens: Screen[] = [
   { id: 'login', label: 'login', title: 'acesso ao sistema' },
   { id: 'home', label: 'home', title: 'painel inicial' },
   { id: 'espacos', label: 'espacos', title: 'espacos populares' },
-  { id: 'gerente', label: 'acesso gerente', title: 'menu gerente' },
+  { id: 'gerente', label: 'painel gerencial', title: 'modulo gerencial' },
   {
     id: 'gerencia-clientes',
     label: 'gerenciamento clientes',
