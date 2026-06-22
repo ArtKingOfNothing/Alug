@@ -38,7 +38,12 @@ public class Gerente {
     @Column(nullable = false, length = 255)
     private String senha;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private PerfilAcesso perfil;
+
     @ManyToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "enderecos_id_endereco", nullable = false)
     private Endereco endereco;
+
 }
