@@ -14,8 +14,6 @@ public class Espaco {
     @Column(name = "id_espaco")
     private Integer idEspaco;
 
-    @Column(nullable = false)
-    private String nome;
 
     @Column(nullable = false)
     private Integer capacidade;
