@@ -5,14 +5,17 @@ import com.alug.backend.dto.ClienteResponseDTO;
 import com.alug.backend.model.Cliente;
 import com.alug.backend.service.ClienteService;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
-import java.net.URI;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/clientes")
+@RequestMapping("/clientes")
+@PreAuthorize("hasAnyAuthority('ROLE_GERENTE_COMUM', 'ROLE_SUPER_ADMIN')")
 public class ClienteController {
 
     private final ClienteService clienteService;
@@ -21,53 +24,63 @@ public class ClienteController {
         this.clienteService = clienteService;
     }
 
+    @PostMapping
+    public ResponseEntity<ClienteResponseDTO> criarCliente(@Valid @RequestBody ClienteRequestDTO dados) {
+        Cliente cliente = new Cliente();
+        cliente.setNome(dados.nome());
+        cliente.setEmail(dados.email());
+        cliente.setCpf(dados.cpf());
+        cliente.setTelefone(dados.telefone());
+        cliente.setEndereco(dados.endereco());
+
+        Cliente clienteSalvo = clienteService.salvarCliente(cliente);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new ClienteResponseDTO(clienteSalvo));
+    }
+
     @GetMapping
-    public List<ClienteResponseDTO> listar(@RequestParam(required = false) String nome) {
-        List<Cliente> clientes;
+    public ResponseEntity<List<ClienteResponseDTO>> listarTodos() {
+        List<Cliente> clientes = clienteService.listarTodos();
 
-        if (nome == null || nome.isBlank()) {
-            clientes = clienteService.listarClientes();
-        } else {
-            clientes = clienteService.consultarClientePorNome(nome);
-        }
+        List<ClienteResponseDTO> resposta = clientes.stream()
+                .map(ClienteResponseDTO::new)
+                .collect(Collectors.toList());
 
-        return clientes.stream().map(ClienteResponseDTO::new).toList();
+        return ResponseEntity.ok(resposta);
     }
 
     @GetMapping("/{id}")
-    public ClienteResponseDTO buscarPorId(@PathVariable Integer id) {
-        return new ClienteResponseDTO(clienteService.consultarClientePorId(id));
+    public ResponseEntity<ClienteResponseDTO> consultarPorId(@PathVariable Integer id) {
+        Cliente cliente = clienteService.consultarClientePorId(id);
+        return ResponseEntity.ok(new ClienteResponseDTO(cliente));
     }
 
-    @PostMapping
-    public ResponseEntity<ClienteResponseDTO> criar(@Valid @RequestBody ClienteRequestDTO body) {
-        Cliente novo = toEntity(body);
-        Cliente salvo = clienteService.salvarCliente(novo);
+    @GetMapping("/busca")
+    public ResponseEntity<List<ClienteResponseDTO>> consultarPorNome(@RequestParam String nome) {
+        List<Cliente> clientes = clienteService.consultarClientePorNome(nome);
 
-        return ResponseEntity
-                .created(URI.create("/api/clientes/" + salvo.getIdCliente()))
-                .body(new ClienteResponseDTO(salvo));
+        List<ClienteResponseDTO> resposta = clientes.stream()
+                .map(ClienteResponseDTO::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(resposta);
     }
 
     @PutMapping("/{id}")
-    public ClienteResponseDTO atualizar(@PathVariable Integer id, @Valid @RequestBody ClienteRequestDTO body) {
-        Cliente atualizado = clienteService.alterarCliente(id, toEntity(body));
-        return new ClienteResponseDTO(atualizado);
+    public ResponseEntity<ClienteResponseDTO> alterarCliente(@PathVariable Integer id, @Valid @RequestBody ClienteRequestDTO dados) {
+        Cliente novosDados = new Cliente();
+        novosDados.setNome(dados.nome());
+        novosDados.setEmail(dados.email());
+        novosDados.setCpf(dados.cpf());
+        novosDados.setTelefone(dados.telefone());
+        novosDados.setEndereco(dados.endereco());
+
+        Cliente clienteAtualizado = clienteService.alterarCliente(id, novosDados);
+        return ResponseEntity.ok(new ClienteResponseDTO(clienteAtualizado));
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deletar(@PathVariable Integer id) {
+    public ResponseEntity<Void> deletarCliente(@PathVariable Integer id) {
         clienteService.removerCliente(id);
         return ResponseEntity.noContent().build();
-    }
-
-    private Cliente toEntity(ClienteRequestDTO dto) {
-        Cliente cliente = new Cliente();
-        cliente.setNome(dto.nome());
-        cliente.setEmail(dto.email());
-        cliente.setCpf(dto.cpf());
-        cliente.setTelefone(dto.telefone());
-        cliente.setEndereco(dto.endereco());
-        return cliente;
     }
 }
