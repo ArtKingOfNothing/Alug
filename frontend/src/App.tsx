@@ -382,10 +382,6 @@ function App() {
         <section className="login-panel">
           <div className="login-form-card">
             <div className="login-brand">alug</div>
-            <div className="login-role-switch">
-              <button className="role-btn is-active">administrador</button>
-              <button className="role-btn">funcionario</button>
-            </div>
             <p className="login-caption">informe e-mail e senha para acessar o sistema.</p>
             <div className="grid-one login-fields">
               <Field label="e-mail" placeholder="seu@email.com" />
