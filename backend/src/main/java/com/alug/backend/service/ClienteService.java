@@ -4,6 +4,8 @@ import com.alug.backend.model.Cliente;
 import com.alug.backend.repository.ClienteRepository;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ClienteService {
 
@@ -38,5 +40,12 @@ public class ClienteService {
         return clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente inexistente."));
     }
-
+    // RF-003
+    public List<Cliente> consultarClientePorNome(String nome) {
+        List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
+        if (clientes.isEmpty()) {
+            throw new IllegalArgumentException("Cliente inexistente.");
+        }
+        return clientes;
+    }
 }
