@@ -33,6 +33,7 @@ public class ConfiguracoesDeSeguranca {
                 .authorizeHttpRequests(authorize -> authorize
                         .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                         .requestMatchers(HttpMethod.GET, "/espacos", "/espacos/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/reservas/*/convidados").permitAll()
                         .anyRequest().authenticated()
                 )
                 .addFilterBefore(filtroDeSeguranca, UsernamePasswordAuthenticationFilter.class)
