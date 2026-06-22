@@ -40,6 +40,7 @@ public class ClienteService {
         return clienteRepository.findById(idCliente)
                 .orElseThrow(() -> new IllegalArgumentException("Cliente inexistente."));
     }
+
     // RF-003
     public List<Cliente> consultarClientePorNome(String nome) {
         List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
@@ -48,6 +49,7 @@ public class ClienteService {
         }
         return clientes;
     }
+
     // RF-005
     public Cliente alterarCliente(Integer idCliente, Cliente dadosAtualizados) {
         Cliente clienteExistente = clienteRepository.findById(idCliente)
