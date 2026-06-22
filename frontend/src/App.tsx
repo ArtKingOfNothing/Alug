@@ -1,4 +1,5 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { carregarResumoDashboard, login } from './api'
 import './App.css'
 
 type Screen = {
@@ -109,11 +110,28 @@ const spaceCards: SpaceCard[] = [
 
 const primaryActions = ['criar novo cliente', 'fazer reserva', 'adicionar novo espaco']
 
-function Field({ label, placeholder }: { label: string; placeholder: string }) {
+function Field({
+  label,
+  placeholder,
+  value,
+  type = 'text',
+  onChange,
+}: {
+  label: string
+  placeholder: string
+  value?: string
+  type?: string
+  onChange?: (value: string) => void
+}) {
   return (
     <label className="field">
       <span>{label}</span>
-      <input placeholder={placeholder} />
+      <input
+        placeholder={placeholder}
+        value={value}
+        type={type}
+        onChange={(event) => onChange?.(event.target.value)}
+      />
     </label>
   )
 }
@@ -235,6 +253,18 @@ function GroupIcon({ id }: { id: string }) {
 function App() {
   const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+  const [loginEmail, setLoginEmail] = useState<string>('admin@alug.com')
+  const [loginSenha, setLoginSenha] = useState<string>('admin123')
+  const [loginErro, setLoginErro] = useState<string>('')
+  const [loginCarregando, setLoginCarregando] = useState<boolean>(false)
+  const [resumoDashboard, setResumoDashboard] = useState({
+    reservasHoje: 0,
+    ocupacaoMedia: 0,
+    ticketsAbertos: 0,
+    clientesBase: 0,
+    espacosBase: 0,
+    reservasBase: 0,
+  })
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     operacao: true,
     clientes: false,
@@ -250,6 +280,56 @@ function App() {
 
   const getScreen = (id: string): Screen | undefined => screens.find((screen) => screen.id === id)
 
+  useEffect(() => {
+    const token = localStorage.getItem('alug_token')
+    if (token) {
+      setIsAuthenticated(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isAuthenticated || activeScreen !== 'home') {
+      return
+    }
+
+    const token = localStorage.getItem('alug_token') ?? undefined
+
+    carregarResumoDashboard(token)
+      .then((resumo) => {
+        setResumoDashboard(resumo)
+      })
+      .catch(() => {
+        setResumoDashboard((prev) => prev)
+      })
+  }, [activeScreen, isAuthenticated])
+
+  const handleLogin = async () => {
+    if (!loginEmail || !loginSenha) {
+      setLoginErro('informe e-mail e senha')
+      return
+    }
+
+    setLoginCarregando(true)
+    setLoginErro('')
+
+    try {
+      const resposta = await login(loginEmail, loginSenha)
+      localStorage.setItem('alug_token', resposta.token)
+      localStorage.setItem('alug_usuario_nome', resposta.nome)
+      localStorage.setItem('alug_usuario_perfil', resposta.perfil)
+      setIsAuthenticated(true)
+      setActiveScreen('home')
+    } catch (erro) {
+      if (erro instanceof Error) {
+        setLoginErro(erro.message)
+      } else {
+        setLoginErro('nao foi possivel autenticar')
+      }
+    } finally {
+      setLoginCarregando(false)
+    }
+  }
+
   const toggleGroup = (groupId: string) => {
     setOpenGroups((prev) => ({
       ...prev,
@@ -257,12 +337,10 @@ function App() {
     }))
   }
 
-  const handleLogin = () => {
-    setIsAuthenticated(true)
-    setActiveScreen('home')
-  }
-
   const handleLogout = () => {
+    localStorage.removeItem('alug_token')
+    localStorage.removeItem('alug_usuario_nome')
+    localStorage.removeItem('alug_usuario_perfil')
     setIsAuthenticated(false)
     setActiveScreen('home')
   }
@@ -291,15 +369,15 @@ function App() {
               <div className="metrics">
                 <article>
                   <p>reservas hoje</p>
-                  <strong>09</strong>
+                  <strong>{resumoDashboard.reservasHoje}</strong>
                 </article>
                 <article>
                   <p>ocupacao media</p>
-                  <strong>87%</strong>
+                  <strong>{resumoDashboard.ocupacaoMedia}%</strong>
                 </article>
                 <article>
                   <p>tickets em aberto</p>
-                  <strong>03</strong>
+                  <strong>{resumoDashboard.ticketsAbertos}</strong>
                 </article>
               </div>
             </SectionCard>
@@ -339,6 +417,22 @@ function App() {
             </SectionCard>
             <SectionCard heading="pesquisar espaco">
               <Field label="nome do espaco" placeholder="digite para pesquisar" />
+            </SectionCard>
+            <SectionCard heading="dados conectados ao backend">
+              <div className="metrics">
+                <article>
+                  <p>clientes base</p>
+                  <strong>{resumoDashboard.clientesBase}</strong>
+                </article>
+                <article>
+                  <p>espacos base</p>
+                  <strong>{resumoDashboard.espacosBase}</strong>
+                </article>
+                <article>
+                  <p>reservas base</p>
+                  <strong>{resumoDashboard.reservasBase}</strong>
+                </article>
+              </div>
             </SectionCard>
           </>
         )
@@ -622,11 +716,23 @@ function App() {
             <div className="login-brand">alug</div>
             <p className="login-caption">informe e-mail e senha para acessar o sistema.</p>
             <div className="grid-one login-fields">
-              <Field label="e-mail" placeholder="seu@email.com" />
-              <Field label="senha" placeholder="digite sua senha" />
+              <Field
+                label="e-mail"
+                placeholder="seu@email.com"
+                value={loginEmail}
+                onChange={setLoginEmail}
+              />
+              <Field
+                label="senha"
+                placeholder="digite sua senha"
+                value={loginSenha}
+                type="password"
+                onChange={setLoginSenha}
+              />
             </div>
-            <button className="primary-btn login-submit" onClick={handleLogin}>
-              entrar como administrador
+            {loginErro ? <p className="login-error">{loginErro}</p> : null}
+            <button className="primary-btn login-submit" onClick={handleLogin} disabled={loginCarregando}>
+              {loginCarregando ? 'entrando...' : 'entrar'}
             </button>
           </div>
           <small className="login-footer">desenvolvido por equipe alug</small>

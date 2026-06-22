@@ -123,6 +123,12 @@
   margin-top: 14px;
 }
 
+.login-error {
+  margin: 10px 0 0;
+  color: #b22a44;
+  font-size: 0.9rem;
+}
+
 .login-footer {
   text-transform: uppercase;
   color: #d4deff;
@@ -369,6 +375,11 @@
   background: #2d4179;
   border-color: #2d4179;
   color: #ffffff;
+}
+
+.primary-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
 }
 
 .ghost-btn {

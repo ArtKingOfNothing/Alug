@@ -41,6 +41,10 @@ public class ClienteService {
                 .orElseThrow(() -> new IllegalArgumentException("Cliente inexistente."));
     }
 
+    public List<Cliente> listarClientes() {
+        return clienteRepository.findAll();
+    }
+
     // RF-003
     public List<Cliente> consultarClientePorNome(String nome) {
         List<Cliente> clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
