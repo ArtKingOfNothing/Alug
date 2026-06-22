@@ -21,7 +21,7 @@ public class Espaco {
     private Integer capacidade;
 
     @Column(nullable = false)
-    private BigDecimal valor;
+    private Float valor;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "enderecos_id_endereco", nullable = false, unique = true)
