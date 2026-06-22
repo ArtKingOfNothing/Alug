@@ -25,4 +25,13 @@ public class ClienteService {
         }
         return clienteRepository.save(cliente);
     }
+
+    // RF-006
+    public void removerCliente(Integer idCliente) {
+        Cliente cliente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new IllegalArgumentException("Erro: ID não encontrado."));
+        clienteRepository.delete(cliente);
+    }
+
+
 }
