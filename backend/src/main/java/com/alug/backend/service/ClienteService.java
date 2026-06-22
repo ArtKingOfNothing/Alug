@@ -48,4 +48,32 @@ public class ClienteService {
         }
         return clientes;
     }
+    // RF-005
+    public Cliente alterarCliente(Integer idCliente, Cliente dadosAtualizados) {
+        Cliente clienteExistente = clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new IllegalArgumentException("ID não encontrado."));
+        clienteRepository.findByCpf(dadosAtualizados.getCpf()).ifPresent(c -> {
+            if (!c.getIdCliente().equals(idCliente)) {
+                throw new IllegalArgumentException("CPF já existe");
+            }
+        });
+        clienteRepository.findByEmail(dadosAtualizados.getEmail()).ifPresent(c -> {
+            if (!c.getIdCliente().equals(idCliente)) {
+                throw new IllegalArgumentException("E-mail já existe");
+            }
+        });
+
+        // ID não é substituido
+        clienteExistente.setNome(dadosAtualizados.getNome());
+        clienteExistente.setCpf(dadosAtualizados.getCpf());
+        clienteExistente.setEmail(dadosAtualizados.getEmail());
+        clienteExistente.setTelefone(dadosAtualizados.getTelefone());
+
+        // alteração de endereço
+        if (dadosAtualizados.getEndereco() != null) {
+            clienteExistente.setEndereco(dadosAtualizados.getEndereco());
+        }
+
+        return clienteRepository.save(clienteExistente);
+    }
 }
