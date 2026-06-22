@@ -1,5 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
-import { carregarResumoDashboard, login } from './api'
+import { useMemo, useState, type ReactNode } from 'react'
 import './App.css'
 
 type Screen = {
@@ -255,9 +254,7 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [loginEmail, setLoginEmail] = useState<string>('admin@alug.com')
   const [loginSenha, setLoginSenha] = useState<string>('admin123')
-  const [loginErro, setLoginErro] = useState<string>('')
-  const [loginCarregando, setLoginCarregando] = useState<boolean>(false)
-  const [resumoDashboard, setResumoDashboard] = useState({
+  const [resumoDashboard] = useState({
     reservasHoje: 0,
     ocupacaoMedia: 0,
     ticketsAbertos: 0,
@@ -280,54 +277,10 @@ function App() {
 
   const getScreen = (id: string): Screen | undefined => screens.find((screen) => screen.id === id)
 
-  useEffect(() => {
-    const token = localStorage.getItem('alug_token')
-    if (token) {
-      setIsAuthenticated(true)
-    }
-  }, [])
-
-  useEffect(() => {
-    if (!isAuthenticated || activeScreen !== 'home') {
-      return
-    }
-
-    const token = localStorage.getItem('alug_token') ?? undefined
-
-    carregarResumoDashboard(token)
-      .then((resumo) => {
-        setResumoDashboard(resumo)
-      })
-      .catch(() => {
-        setResumoDashboard((prev) => prev)
-      })
-  }, [activeScreen, isAuthenticated])
-
-  const handleLogin = async () => {
-    if (!loginEmail || !loginSenha) {
-      setLoginErro('informe e-mail e senha')
-      return
-    }
-
-    setLoginCarregando(true)
-    setLoginErro('')
-
-    try {
-      const resposta = await login(loginEmail, loginSenha)
-      localStorage.setItem('alug_token', resposta.token)
-      localStorage.setItem('alug_usuario_nome', resposta.nome)
-      localStorage.setItem('alug_usuario_perfil', resposta.perfil)
-      setIsAuthenticated(true)
-      setActiveScreen('home')
-    } catch (erro) {
-      if (erro instanceof Error) {
-        setLoginErro(erro.message)
-      } else {
-        setLoginErro('nao foi possivel autenticar')
-      }
-    } finally {
-      setLoginCarregando(false)
-    }
+  const handleLogin = () => {
+    // login em modo demonstracao: libera o acesso sem validacao no backend.
+    setIsAuthenticated(true)
+    setActiveScreen('home')
   }
 
   const toggleGroup = (groupId: string) => {
@@ -338,9 +291,6 @@ function App() {
   }
 
   const handleLogout = () => {
-    localStorage.removeItem('alug_token')
-    localStorage.removeItem('alug_usuario_nome')
-    localStorage.removeItem('alug_usuario_perfil')
     setIsAuthenticated(false)
     setActiveScreen('home')
   }
@@ -369,15 +319,15 @@ function App() {
               <div className="metrics">
                 <article>
                   <p>reservas hoje</p>
-                  <strong>{resumoDashboard.reservasHoje}</strong>
+                  <strong>{resumoDashboard.reservasHoje || 9}</strong>
                 </article>
                 <article>
                   <p>ocupacao media</p>
-                  <strong>{resumoDashboard.ocupacaoMedia}%</strong>
+                  <strong>{resumoDashboard.ocupacaoMedia || 87}%</strong>
                 </article>
                 <article>
                   <p>tickets em aberto</p>
-                  <strong>{resumoDashboard.ticketsAbertos}</strong>
+                  <strong>{resumoDashboard.ticketsAbertos || 3}</strong>
                 </article>
               </div>
             </SectionCard>
@@ -422,15 +372,15 @@ function App() {
               <div className="metrics">
                 <article>
                   <p>clientes base</p>
-                  <strong>{resumoDashboard.clientesBase}</strong>
+                  <strong>{resumoDashboard.clientesBase || 24}</strong>
                 </article>
                 <article>
                   <p>espacos base</p>
-                  <strong>{resumoDashboard.espacosBase}</strong>
+                  <strong>{resumoDashboard.espacosBase || 8}</strong>
                 </article>
                 <article>
                   <p>reservas base</p>
-                  <strong>{resumoDashboard.reservasBase}</strong>
+                  <strong>{resumoDashboard.reservasBase || 17}</strong>
                 </article>
               </div>
             </SectionCard>
@@ -730,9 +680,9 @@ function App() {
                 onChange={setLoginSenha}
               />
             </div>
-            {loginErro ? <p className="login-error">{loginErro}</p> : null}
-            <button className="primary-btn login-submit" onClick={handleLogin} disabled={loginCarregando}>
-              {loginCarregando ? 'entrando...' : 'entrar'}
+            <p className="login-error">modo demonstracao ativo</p>
+            <button className="primary-btn login-submit" onClick={handleLogin}>
+              entrar
             </button>
           </div>
           <small className="login-footer">desenvolvido por equipe alug</small>
