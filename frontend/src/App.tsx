@@ -101,6 +101,64 @@ function SectionCard({
   )
 }
 
+function NavIcon({ id }: { id: string }) {
+  switch (id) {
+    case 'home':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 10.5 12 3l9 7.5v10a.5.5 0 0 1-.5.5H14v-6h-4v6H3.5a.5.5 0 0 1-.5-.5z" />
+        </svg>
+      )
+    case 'espacos':
+    case 'gerencia-espacos':
+    case 'criar-espaco':
+    case 'alterar-espaco':
+    case 'deletar-espaco':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 20h18v1H3zM5 19V8h14v11h-2v-4H7v4zm3-8h2v2H8zm6 0h2v2h-2z" />
+        </svg>
+      )
+    case 'gerente':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2 2 7l10 5 8-4v7h2V7zM6 13v4c0 2.2 2.7 4 6 4s6-1.8 6-4v-4l-6 3z" />
+        </svg>
+      )
+    case 'gerencia-clientes':
+    case 'criar-cliente':
+    case 'alterar-cliente':
+    case 'deletar-cliente':
+    case 'lista-convidados':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4m-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3m0 2c-2.7 0-5 1.3-5 3v2h8v-2c0-.9.3-1.7.9-2.4A9.6 9.6 0 0 0 8 13m8 0c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3" />
+        </svg>
+      )
+    case 'gerencia-reservas':
+    case 'criar-reserva':
+    case 'alterar-reserva':
+    case 'deletar-reserva':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3zm12 8H5v10h14zm-9 3h4v2h-4z" />
+        </svg>
+      )
+    case 'pagamento':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2H3zm0 4h18v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2zm12 4h4v2h-4z" />
+        </svg>
+      )
+    default:
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 4h16v16H4z" />
+        </svg>
+      )
+  }
+}
+
 function App() {
   const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -503,7 +561,12 @@ function App() {
             onClick={() => setActiveScreen(screen.id)}
             className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
           >
-            {screen.label}
+            <span className="nav-btn-inner">
+              <span className="nav-icon">
+                <NavIcon id={screen.id} />
+              </span>
+              <span>{screen.label}</span>
+            </span>
           </button>
         ))}
       </aside>

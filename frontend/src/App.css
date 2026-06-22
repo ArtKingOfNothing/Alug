@@ -175,6 +175,26 @@
   cursor: pointer;
 }
 
+.nav-btn-inner {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-icon {
+  width: 16px;
+  height: 16px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.nav-icon svg {
+  width: 16px;
+  height: 16px;
+  fill: currentColor;
+}
+
 .nav-btn:hover,
 .nav-btn.is-active {
   background: #34477f;
