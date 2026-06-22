@@ -467,6 +467,21 @@
   padding: 8px 12px;
 }
 
+.chip-btn.is-selected {
+  background: #2d4179;
+  border-color: #2d4179;
+  color: #ffffff;
+}
+
+.table-action {
+  border: 1px solid #c9d4ea;
+  background: #f3f6fc;
+  color: #2e4a73;
+  border-radius: 6px;
+  padding: 4px 8px;
+  cursor: pointer;
+}
+
 .payment-info {
   border: 1px solid #d3dced;
   border-radius: 10px;

@@ -62,23 +62,17 @@ const navGroups: NavGroup[] = [
   {
     id: 'clientes',
     label: 'clientes',
-    items: ['gerencia-clientes', 'criar-cliente', 'alterar-cliente', 'deletar-cliente'],
+    items: ['gerencia-clientes'],
   },
   {
     id: 'espacos',
     label: 'espacos',
-    items: ['espacos', 'gerencia-espacos', 'criar-espaco', 'alterar-espaco', 'deletar-espaco'],
+    items: ['espacos', 'gerencia-espacos'],
   },
   {
     id: 'reservas',
     label: 'reservas',
-    items: [
-      'gerencia-reservas',
-      'criar-reserva',
-      'alterar-reserva',
-      'deletar-reserva',
-      'lista-convidados',
-    ],
+    items: ['gerencia-reservas', 'lista-convidados'],
   },
   { id: 'financeiro', label: 'financeiro', items: ['pagamento'] },
 ]
@@ -269,6 +263,9 @@ function App() {
     reservas: false,
     financeiro: false,
   })
+  const [clienteMode, setClienteMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
+  const [espacoMode, setEspacoMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
+  const [reservaMode, setReservaMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
 
   const activeTitle = useMemo(
     () => screens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
@@ -411,55 +408,92 @@ function App() {
         )
 
       case 'gerencia-clientes':
-        return (
-          <>
-            <SectionCard heading="acoes de clientes">
-              <div className="quick-actions">
-                <button className="chip-btn">criar cliente</button>
-                <button className="chip-btn">alterar cliente</button>
-                <button className="chip-btn">deletar cliente</button>
-              </div>
-            </SectionCard>
-            <SectionCard heading="pesquisar cliente">
-              <Field label="nome" placeholder="nome completo" />
-            </SectionCard>
-          </>
-        )
-
       case 'criar-cliente':
       case 'alterar-cliente':
-        return (
-          <SectionCard
-            heading={activeScreen === 'criar-cliente' ? 'criar cliente' : 'alterar cliente'}
-          >
-            <div className="grid-two">
-              <Field label="nome" placeholder="nome do cliente" />
-              <Field label="cpf" placeholder="000.000.000-00" />
-              <Field label="telefone" placeholder="(00) 00000-0000" />
-              <Field label="email" placeholder="cliente@email.com" />
-              <Field label="endereco" placeholder="rua, numero, bairro" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="primary-btn">
-                {activeScreen === 'criar-cliente' ? 'inserir' : 'alterar'}
-              </button>
-            </div>
-          </SectionCard>
-        )
-
       case 'deletar-cliente':
         return (
-          <SectionCard heading="deletar cliente">
-            <div className="grid-one">
-              <Field label="nome do cliente" placeholder="digite o nome" />
-              <Field label="confirmacao" placeholder="digite deletar para confirmar" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="danger-btn">excluir</button>
-            </div>
-          </SectionCard>
+          <>
+            <SectionCard heading="clientes em uma tela unica">
+              <div className="quick-actions">
+                <button
+                  className={clienteMode === 'criar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setClienteMode('criar')}
+                >
+                  criar
+                </button>
+                <button
+                  className={clienteMode === 'editar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setClienteMode('editar')}
+                >
+                  editar
+                </button>
+                <button
+                  className={clienteMode === 'deletar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setClienteMode('deletar')}
+                >
+                  deletar
+                </button>
+              </div>
+            </SectionCard>
+
+            <SectionCard heading="lista de clientes">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>nome</th>
+                    <th>cpf</th>
+                    <th>telefone</th>
+                    <th>acao</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>ana monteiro</td>
+                    <td>123.456.789-00</td>
+                    <td>(35) 99999-1111</td>
+                    <td>
+                      <button className="table-action" onClick={() => setClienteMode('editar')}>
+                        editar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>carlos neto</td>
+                    <td>987.654.321-00</td>
+                    <td>(35) 98888-2222</td>
+                    <td>
+                      <button className="table-action" onClick={() => setClienteMode('deletar')}>
+                        excluir
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </SectionCard>
+
+            <SectionCard heading={clienteMode === 'deletar' ? 'deletar cliente' : 'formulario cliente'}>
+              {clienteMode === 'deletar' ? (
+                <div className="grid-one">
+                  <Field label="id ou nome" placeholder="cliente a excluir" />
+                  <Field label="confirmacao" placeholder="digite excluir para confirmar" />
+                </div>
+              ) : (
+                <div className="grid-two">
+                  <Field label="nome" placeholder="nome do cliente" />
+                  <Field label="cpf" placeholder="000.000.000-00" />
+                  <Field label="telefone" placeholder="(00) 00000-0000" />
+                  <Field label="email" placeholder="cliente@email.com" />
+                  <Field label="endereco" placeholder="rua, numero, bairro" />
+                </div>
+              )}
+              <div className="action-row">
+                <button className="ghost-btn">limpar</button>
+                <button className={clienteMode === 'deletar' ? 'danger-btn' : 'primary-btn'}>
+                  {clienteMode === 'criar' ? 'inserir' : clienteMode === 'editar' ? 'alterar' : 'excluir'}
+                </button>
+              </div>
+            </SectionCard>
+          </>
         )
 
       case 'lista-convidados':
@@ -494,132 +528,182 @@ function App() {
           </SectionCard>
         )
 
-      case 'criar-espaco':
-        return (
-          <SectionCard heading="criar espaco">
-            <div className="grid-two">
-              <Field label="endereco" placeholder="rua, numero, bairro" />
-              <Field label="capacidade" placeholder="numero de pessoas" />
-              <Field label="valor" placeholder="r$ 0,00" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="primary-btn">inserir</button>
-            </div>
-          </SectionCard>
-        )
-
       case 'gerencia-espacos':
+      case 'criar-espaco':
+      case 'alterar-espaco':
+      case 'deletar-espaco':
         return (
           <>
-            <SectionCard heading="acoes de espacos">
+            <SectionCard heading="espacos em uma tela unica">
               <div className="quick-actions">
-                <button className="chip-btn">criar espaco</button>
-                <button className="chip-btn">alterar espaco</button>
-                <button className="chip-btn">deletar espaco</button>
+                <button
+                  className={espacoMode === 'criar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setEspacoMode('criar')}
+                >
+                  criar
+                </button>
+                <button
+                  className={espacoMode === 'editar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setEspacoMode('editar')}
+                >
+                  editar
+                </button>
+                <button
+                  className={espacoMode === 'deletar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setEspacoMode('deletar')}
+                >
+                  deletar
+                </button>
               </div>
             </SectionCard>
-            <SectionCard heading="pesquisar espaco">
-              <Field label="nome" placeholder="nome do espaco" />
+
+            <SectionCard heading="lista de espacos">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>espaco</th>
+                    <th>capacidade</th>
+                    <th>valor</th>
+                    <th>acao</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>resort neo atlanta</td>
+                    <td>42</td>
+                    <td>r$ 1.280,00</td>
+                    <td>
+                      <button className="table-action" onClick={() => setEspacoMode('editar')}>
+                        editar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>hall orbit</td>
+                    <td>30</td>
+                    <td>r$ 740,00</td>
+                    <td>
+                      <button className="table-action" onClick={() => setEspacoMode('deletar')}>
+                        excluir
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </SectionCard>
+
+            <SectionCard heading={espacoMode === 'deletar' ? 'deletar espaco' : 'formulario espaco'}>
+              {espacoMode === 'deletar' ? (
+                <div className="grid-one">
+                  <Field label="id ou nome" placeholder="espaco a excluir" />
+                  <Field label="confirmacao" placeholder="digite excluir para confirmar" />
+                </div>
+              ) : (
+                <div className="grid-two">
+                  <Field label="endereco" placeholder="rua, numero, bairro" />
+                  <Field label="capacidade" placeholder="numero de pessoas" />
+                  <Field label="valor" placeholder="r$ 0,00" />
+                </div>
+              )}
+              <div className="action-row">
+                <button className="ghost-btn">limpar</button>
+                <button className={espacoMode === 'deletar' ? 'danger-btn' : 'primary-btn'}>
+                  {espacoMode === 'criar' ? 'inserir' : espacoMode === 'editar' ? 'alterar' : 'excluir'}
+                </button>
+              </div>
             </SectionCard>
           </>
-        )
-
-      case 'criar-reserva':
-        return (
-          <SectionCard heading="criar reserva">
-            <div className="grid-two">
-              <Field label="id do cliente" placeholder="id cliente" />
-              <Field label="id do gerente" placeholder="id gerente" />
-              <Field label="id do espaco" placeholder="id espaco" />
-              <Field label="data" placeholder="dd/mm/aaaa" />
-              <Field label="lista de convidados" placeholder="nome1, nome2" />
-              <Field label="servicos extras" placeholder="buffet, fotografos" />
-              <Field label="valor" placeholder="r$ 0,00" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="primary-btn">prosseguir</button>
-            </div>
-          </SectionCard>
         )
 
       case 'gerencia-reservas':
-        return (
-          <>
-            <SectionCard heading="acoes de reservas">
-              <div className="quick-actions">
-                <button className="chip-btn">fazer reserva</button>
-                <button className="chip-btn">alterar reserva</button>
-                <button className="chip-btn">deletar reserva</button>
-              </div>
-            </SectionCard>
-            <SectionCard heading="pesquisar reserva">
-              <Field label="id ou cliente" placeholder="buscar reserva" />
-            </SectionCard>
-          </>
-        )
-
+      case 'criar-reserva':
       case 'alterar-reserva':
-        return (
-          <SectionCard heading="alterar reserva">
-            <div className="grid-two">
-              <Field label="id do cliente" placeholder="id cliente" />
-              <Field label="id do gerente" placeholder="id gerente" />
-              <Field label="id do espaco" placeholder="id espaco" />
-              <Field label="data" placeholder="dd/mm/aaaa" />
-              <Field label="lista de convidados" placeholder="nome1, nome2" />
-              <Field label="servicos opcionais" placeholder="buffet, fotografos" />
-              <Field label="valor" placeholder="r$ 0,00" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="primary-btn">alterar</button>
-            </div>
-          </SectionCard>
-        )
-
       case 'deletar-reserva':
         return (
-          <SectionCard heading="deletar reserva">
-            <div className="grid-one">
-              <Field label="reserva a excluir" placeholder="id da reserva" />
-              <Field label="confirmacao" placeholder="digite excluir para confirmar" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="danger-btn">excluir</button>
-            </div>
-          </SectionCard>
-        )
+          <>
+            <SectionCard heading="reservas em uma tela unica">
+              <div className="quick-actions">
+                <button
+                  className={reservaMode === 'criar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setReservaMode('criar')}
+                >
+                  criar
+                </button>
+                <button
+                  className={reservaMode === 'editar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setReservaMode('editar')}
+                >
+                  editar
+                </button>
+                <button
+                  className={reservaMode === 'deletar' ? 'chip-btn is-selected' : 'chip-btn'}
+                  onClick={() => setReservaMode('deletar')}
+                >
+                  deletar
+                </button>
+              </div>
+            </SectionCard>
 
-      case 'alterar-espaco':
-        return (
-          <SectionCard heading="alterar espaco">
-            <div className="grid-two">
-              <Field label="endereco" placeholder="rua, numero, bairro" />
-              <Field label="capacidade" placeholder="numero de pessoas" />
-              <Field label="valor" placeholder="r$ 0,00" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="primary-btn">alterar</button>
-            </div>
-          </SectionCard>
-        )
+            <SectionCard heading="lista de reservas">
+              <table className="data-table">
+                <thead>
+                  <tr>
+                    <th>id</th>
+                    <th>cliente</th>
+                    <th>data</th>
+                    <th>acao</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>001</td>
+                    <td>ana monteiro</td>
+                    <td>15/09/2026</td>
+                    <td>
+                      <button className="table-action" onClick={() => setReservaMode('editar')}>
+                        editar
+                      </button>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>002</td>
+                    <td>carlos neto</td>
+                    <td>23/10/2026</td>
+                    <td>
+                      <button className="table-action" onClick={() => setReservaMode('deletar')}>
+                        excluir
+                      </button>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </SectionCard>
 
-      case 'deletar-espaco':
-        return (
-          <SectionCard heading="deletar espaco">
-            <div className="grid-one">
-              <Field label="espaco a excluir" placeholder="id do espaco" />
-              <Field label="confirmacao" placeholder="digite excluir para confirmar" />
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="danger-btn">excluir</button>
-            </div>
-          </SectionCard>
+            <SectionCard heading={reservaMode === 'deletar' ? 'deletar reserva' : 'formulario reserva'}>
+              {reservaMode === 'deletar' ? (
+                <div className="grid-one">
+                  <Field label="reserva a excluir" placeholder="id da reserva" />
+                  <Field label="confirmacao" placeholder="digite excluir para confirmar" />
+                </div>
+              ) : (
+                <div className="grid-two">
+                  <Field label="id do cliente" placeholder="id cliente" />
+                  <Field label="id do gerente" placeholder="id gerente" />
+                  <Field label="id do espaco" placeholder="id espaco" />
+                  <Field label="data" placeholder="dd/mm/aaaa" />
+                  <Field label="lista de convidados" placeholder="nome1, nome2" />
+                  <Field label="servicos opcionais" placeholder="buffet, fotografos" />
+                  <Field label="valor" placeholder="r$ 0,00" />
+                </div>
+              )}
+              <div className="action-row">
+                <button className="ghost-btn">limpar</button>
+                <button className={reservaMode === 'deletar' ? 'danger-btn' : 'primary-btn'}>
+                  {reservaMode === 'criar' ? 'inserir' : reservaMode === 'editar' ? 'alterar' : 'excluir'}
+                </button>
+              </div>
+            </SectionCard>
+          </>
         )
 
       case 'pagamento':
