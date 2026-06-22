@@ -20,6 +20,35 @@ type SpaceCard = {
   image: string
 }
 
+type ClienteItem = {
+  id: number
+  nome: string
+  cpf: string
+  telefone: string
+  email: string
+  endereco: string
+}
+
+type EspacoItem = {
+  id: number
+  nome: string
+  capacidade: string
+  valor: string
+  endereco: string
+}
+
+type ReservaItem = {
+  id: number
+  cliente: string
+  clienteId: string
+  gerenteId: string
+  espacoId: string
+  data: string
+  convidados: string
+  servicos: string
+  valor: string
+}
+
 const screens: Screen[] = [
   { id: 'login', label: 'login', title: 'acesso ao sistema' },
   { id: 'home', label: 'home', title: 'painel inicial' },
@@ -102,6 +131,67 @@ const spaceCards: SpaceCard[] = [
 ]
 
 const primaryActions = ['criar novo cliente', 'fazer reserva', 'adicionar novo espaco']
+
+const initialClientes: ClienteItem[] = [
+  {
+    id: 1,
+    nome: 'ana monteiro',
+    cpf: '123.456.789-00',
+    telefone: '(35) 99999-1111',
+    email: 'ana@email.com',
+    endereco: 'rua a, 10',
+  },
+  {
+    id: 2,
+    nome: 'carlos neto',
+    cpf: '987.654.321-00',
+    telefone: '(35) 98888-2222',
+    email: 'carlos@email.com',
+    endereco: 'rua b, 20',
+  },
+]
+
+const initialEspacos: EspacoItem[] = [
+  {
+    id: 1,
+    nome: 'resort neo atlanta',
+    capacidade: '42',
+    valor: '1280',
+    endereco: 'av central, 100',
+  },
+  {
+    id: 2,
+    nome: 'hall orbit',
+    capacidade: '30',
+    valor: '740',
+    endereco: 'rua das palmeiras, 80',
+  },
+]
+
+const initialReservas: ReservaItem[] = [
+  {
+    id: 1,
+    cliente: 'ana monteiro',
+    clienteId: '1',
+    gerenteId: '1',
+    espacoId: '1',
+    data: '15/09/2026',
+    convidados: 'maria, pedro',
+    servicos: 'buffet',
+    valor: '2500',
+  },
+  {
+    id: 2,
+    cliente: 'carlos neto',
+    clienteId: '2',
+    gerenteId: '1',
+    espacoId: '2',
+    data: '23/10/2026',
+    convidados: 'julia, paulo',
+    servicos: 'fotografia',
+    valor: '1800',
+  },
+]
 
 function Field({
   label,
@@ -243,6 +333,22 @@ function GroupIcon({ id }: { id: string }) {
   }
 }
 
+function PencilIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m3 17.25 11.06-11.06 3.75 3.75L6.75 21H3zm14.71-9.04 1.41-1.41a1 1 0 0 0 0-1.41L17.62 3.9a1 1 0 0 0-1.41 0L14.8 5.31z" />
+    </svg>
+  )
+}
+
+function DotsIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 7a2 2 0 1 0-2-2 2 2 0 0 0 2 2m0 7a2 2 0 1 0-2-2 2 2 0 0 0 2 2m0 7a2 2 0 1 0-2-2 2 2 0 0 0 2 2" />
+    </svg>
+  )
+}
+
 function App() {
   const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
@@ -266,6 +372,36 @@ function App() {
   const [clienteMode, setClienteMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
   const [espacoMode, setEspacoMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
   const [reservaMode, setReservaMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
+  const [clientes, setClientes] = useState<ClienteItem[]>(initialClientes)
+  const [espacos, setEspacos] = useState<EspacoItem[]>(initialEspacos)
+  const [reservas, setReservas] = useState<ReservaItem[]>(initialReservas)
+  const [openActionKey, setOpenActionKey] = useState<string | null>(null)
+  const [clienteForm, setClienteForm] = useState<ClienteItem>({
+    id: 0,
+    nome: '',
+    cpf: '',
+    telefone: '',
+    email: '',
+    endereco: '',
+  })
+  const [espacoForm, setEspacoForm] = useState<EspacoItem>({
+    id: 0,
+    nome: '',
+    capacidade: '',
+    valor: '',
+    endereco: '',
+  })
+  const [reservaForm, setReservaForm] = useState<ReservaItem>({
+    id: 0,
+    cliente: '',
+    clienteId: '',
+    gerenteId: '',
+    espacoId: '',
+    data: '',
+    convidados: '',
+    servicos: '',
+    valor: '',
+  })
 
   const activeTitle = useMemo(
     () => screens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
@@ -290,6 +426,76 @@ function App() {
   const handleLogout = () => {
     setIsAuthenticated(false)
     setActiveScreen('home')
+  }
+
+  const resetClienteForm = () => {
+    setClienteForm({ id: 0, nome: '', cpf: '', telefone: '', email: '', endereco: '' })
+  }
+
+  const resetEspacoForm = () => {
+    setEspacoForm({ id: 0, nome: '', capacidade: '', valor: '', endereco: '' })
+  }
+
+  const resetReservaForm = () => {
+    setReservaForm({
+      id: 0,
+      cliente: '',
+      clienteId: '',
+      gerenteId: '',
+      espacoId: '',
+      data: '',
+      convidados: '',
+      servicos: '',
+      valor: '',
+    })
+  }
+
+  const salvarCliente = () => {
+    if (clienteMode === 'criar') {
+      setClientes((prev) => [...prev, { ...clienteForm, id: Date.now() }])
+      resetClienteForm()
+      return
+    }
+
+    if (clienteMode === 'editar') {
+      setClientes((prev) => prev.map((item) => (item.id === clienteForm.id ? { ...clienteForm } : item)))
+      return
+    }
+
+    setClientes((prev) => prev.filter((item) => item.id !== clienteForm.id))
+    resetClienteForm()
+  }
+
+  const salvarEspaco = () => {
+    if (espacoMode === 'criar') {
+      setEspacos((prev) => [...prev, { ...espacoForm, id: Date.now() }])
+      resetEspacoForm()
+      return
+    }
+
+    if (espacoMode === 'editar') {
+      setEspacos((prev) => prev.map((item) => (item.id === espacoForm.id ? { ...espacoForm } : item)))
+      return
+    }
+
+    setEspacos((prev) => prev.filter((item) => item.id !== espacoForm.id))
+    resetEspacoForm()
+  }
+
+  const salvarReserva = () => {
+    if (reservaMode === 'criar') {
+      setReservas((prev) => [...prev, { ...reservaForm, id: Date.now() }])
+      resetReservaForm()
+      return
+    }
+
+    if (reservaMode === 'editar') {
+      setReservas((prev) => prev.map((item) => (item.id === reservaForm.id ? { ...reservaForm } : item)))
+      return
+    }
+
+    setReservas((prev) => prev.filter((item) => item.id !== reservaForm.id))
+    resetReservaForm()
   }
 
   const renderScreen = () => {
@@ -447,26 +653,59 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>ana monteiro</td>
-                    <td>123.456.789-00</td>
-                    <td>(35) 99999-1111</td>
-                    <td>
-                      <button className="table-action" onClick={() => setClienteMode('editar')}>
-                        editar
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>carlos neto</td>
-                    <td>987.654.321-00</td>
-                    <td>(35) 98888-2222</td>
-                    <td>
-                      <button className="table-action" onClick={() => setClienteMode('deletar')}>
-                        excluir
-                      </button>
-                    </td>
-                  </tr>
+                  {clientes.map((item) => {
+                    const actionKey = `cliente-${item.id}`
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.nome}</td>
+                        <td>{item.cpf}</td>
+                        <td>{item.telefone}</td>
+                        <td>
+                          <div className="table-actions-wrap">
+                            <button
+                              className="icon-action"
+                              onClick={() => {
+                                setClienteMode('editar')
+                                setClienteForm(item)
+                              }}
+                            >
+                              <PencilIcon />
+                            </button>
+                            <button
+                              className="icon-action"
+                              onClick={() =>
+                                setOpenActionKey((prev) => (prev === actionKey ? null : actionKey))
+                              }
+                            >
+                              <DotsIcon />
+                            </button>
+                            {openActionKey === actionKey ? (
+                              <div className="row-menu">
+                                <button
+                                  onClick={() => {
+                                    setClienteMode('editar')
+                                    setClienteForm(item)
+                                    setOpenActionKey(null)
+                                  }}
+                                >
+                                  editar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setClienteMode('deletar')
+                                    setClienteForm(item)
+                                    setOpenActionKey(null)
+                                  }}
+                                >
+                                  excluir
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </SectionCard>
@@ -479,16 +718,46 @@ function App() {
                 </div>
               ) : (
                 <div className="grid-two">
-                  <Field label="nome" placeholder="nome do cliente" />
-                  <Field label="cpf" placeholder="000.000.000-00" />
-                  <Field label="telefone" placeholder="(00) 00000-0000" />
-                  <Field label="email" placeholder="cliente@email.com" />
-                  <Field label="endereco" placeholder="rua, numero, bairro" />
+                  <Field
+                    label="nome"
+                    placeholder="nome do cliente"
+                    value={clienteForm.nome}
+                    onChange={(value) => setClienteForm((prev) => ({ ...prev, nome: value }))}
+                  />
+                  <Field
+                    label="cpf"
+                    placeholder="000.000.000-00"
+                    value={clienteForm.cpf}
+                    onChange={(value) => setClienteForm((prev) => ({ ...prev, cpf: value }))}
+                  />
+                  <Field
+                    label="telefone"
+                    placeholder="(00) 00000-0000"
+                    value={clienteForm.telefone}
+                    onChange={(value) => setClienteForm((prev) => ({ ...prev, telefone: value }))}
+                  />
+                  <Field
+                    label="email"
+                    placeholder="cliente@email.com"
+                    value={clienteForm.email}
+                    onChange={(value) => setClienteForm((prev) => ({ ...prev, email: value }))}
+                  />
+                  <Field
+                    label="endereco"
+                    placeholder="rua, numero, bairro"
+                    value={clienteForm.endereco}
+                    onChange={(value) => setClienteForm((prev) => ({ ...prev, endereco: value }))}
+                  />
                 </div>
               )}
               <div className="action-row">
-                <button className="ghost-btn">limpar</button>
-                <button className={clienteMode === 'deletar' ? 'danger-btn' : 'primary-btn'}>
+                <button className="ghost-btn" onClick={resetClienteForm}>
+                  limpar
+                </button>
+                <button
+                  className={clienteMode === 'deletar' ? 'danger-btn' : 'primary-btn'}
+                  onClick={salvarCliente}
+                >
                   {clienteMode === 'criar' ? 'inserir' : clienteMode === 'editar' ? 'alterar' : 'excluir'}
                 </button>
               </div>
@@ -568,26 +837,59 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>resort neo atlanta</td>
-                    <td>42</td>
-                    <td>r$ 1.280,00</td>
-                    <td>
-                      <button className="table-action" onClick={() => setEspacoMode('editar')}>
-                        editar
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>hall orbit</td>
-                    <td>30</td>
-                    <td>r$ 740,00</td>
-                    <td>
-                      <button className="table-action" onClick={() => setEspacoMode('deletar')}>
-                        excluir
-                      </button>
-                    </td>
-                  </tr>
+                  {espacos.map((item) => {
+                    const actionKey = `espaco-${item.id}`
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.nome}</td>
+                        <td>{item.capacidade}</td>
+                        <td>{`r$ ${item.valor},00`}</td>
+                        <td>
+                          <div className="table-actions-wrap">
+                            <button
+                              className="icon-action"
+                              onClick={() => {
+                                setEspacoMode('editar')
+                                setEspacoForm(item)
+                              }}
+                            >
+                              <PencilIcon />
+                            </button>
+                            <button
+                              className="icon-action"
+                              onClick={() =>
+                                setOpenActionKey((prev) => (prev === actionKey ? null : actionKey))
+                              }
+                            >
+                              <DotsIcon />
+                            </button>
+                            {openActionKey === actionKey ? (
+                              <div className="row-menu">
+                                <button
+                                  onClick={() => {
+                                    setEspacoMode('editar')
+                                    setEspacoForm(item)
+                                    setOpenActionKey(null)
+                                  }}
+                                >
+                                  editar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setEspacoMode('deletar')
+                                    setEspacoForm(item)
+                                    setOpenActionKey(null)
+                                  }}
+                                >
+                                  excluir
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </SectionCard>
@@ -600,14 +902,40 @@ function App() {
                 </div>
               ) : (
                 <div className="grid-two">
-                  <Field label="endereco" placeholder="rua, numero, bairro" />
-                  <Field label="capacidade" placeholder="numero de pessoas" />
-                  <Field label="valor" placeholder="r$ 0,00" />
+                  <Field
+                    label="nome"
+                    placeholder="nome do espaco"
+                    value={espacoForm.nome}
+                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, nome: value }))}
+                  />
+                  <Field
+                    label="endereco"
+                    placeholder="rua, numero, bairro"
+                    value={espacoForm.endereco}
+                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, endereco: value }))}
+                  />
+                  <Field
+                    label="capacidade"
+                    placeholder="numero de pessoas"
+                    value={espacoForm.capacidade}
+                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, capacidade: value }))}
+                  />
+                  <Field
+                    label="valor"
+                    placeholder="r$ 0,00"
+                    value={espacoForm.valor}
+                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, valor: value }))}
+                  />
                 </div>
               )}
               <div className="action-row">
-                <button className="ghost-btn">limpar</button>
-                <button className={espacoMode === 'deletar' ? 'danger-btn' : 'primary-btn'}>
+                <button className="ghost-btn" onClick={resetEspacoForm}>
+                  limpar
+                </button>
+                <button
+                  className={espacoMode === 'deletar' ? 'danger-btn' : 'primary-btn'}
+                  onClick={salvarEspaco}
+                >
                   {espacoMode === 'criar' ? 'inserir' : espacoMode === 'editar' ? 'alterar' : 'excluir'}
                 </button>
               </div>
@@ -655,26 +983,59 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  <tr>
-                    <td>001</td>
-                    <td>ana monteiro</td>
-                    <td>15/09/2026</td>
-                    <td>
-                      <button className="table-action" onClick={() => setReservaMode('editar')}>
-                        editar
-                      </button>
-                    </td>
-                  </tr>
-                  <tr>
-                    <td>002</td>
-                    <td>carlos neto</td>
-                    <td>23/10/2026</td>
-                    <td>
-                      <button className="table-action" onClick={() => setReservaMode('deletar')}>
-                        excluir
-                      </button>
-                    </td>
-                  </tr>
+                  {reservas.map((item) => {
+                    const actionKey = `reserva-${item.id}`
+                    return (
+                      <tr key={item.id}>
+                        <td>{item.id.toString().padStart(3, '0')}</td>
+                        <td>{item.cliente}</td>
+                        <td>{item.data}</td>
+                        <td>
+                          <div className="table-actions-wrap">
+                            <button
+                              className="icon-action"
+                              onClick={() => {
+                                setReservaMode('editar')
+                                setReservaForm(item)
+                              }}
+                            >
+                              <PencilIcon />
+                            </button>
+                            <button
+                              className="icon-action"
+                              onClick={() =>
+                                setOpenActionKey((prev) => (prev === actionKey ? null : actionKey))
+                              }
+                            >
+                              <DotsIcon />
+                            </button>
+                            {openActionKey === actionKey ? (
+                              <div className="row-menu">
+                                <button
+                                  onClick={() => {
+                                    setReservaMode('editar')
+                                    setReservaForm(item)
+                                    setOpenActionKey(null)
+                                  }}
+                                >
+                                  editar
+                                </button>
+                                <button
+                                  onClick={() => {
+                                    setReservaMode('deletar')
+                                    setReservaForm(item)
+                                    setOpenActionKey(null)
+                                  }}
+                                >
+                                  excluir
+                                </button>
+                              </div>
+                            ) : null}
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })}
                 </tbody>
               </table>
             </SectionCard>
@@ -687,18 +1048,64 @@ function App() {
                 </div>
               ) : (
                 <div className="grid-two">
-                  <Field label="id do cliente" placeholder="id cliente" />
-                  <Field label="id do gerente" placeholder="id gerente" />
-                  <Field label="id do espaco" placeholder="id espaco" />
-                  <Field label="data" placeholder="dd/mm/aaaa" />
-                  <Field label="lista de convidados" placeholder="nome1, nome2" />
-                  <Field label="servicos opcionais" placeholder="buffet, fotografos" />
-                  <Field label="valor" placeholder="r$ 0,00" />
+                  <Field
+                    label="cliente"
+                    placeholder="nome do cliente"
+                    value={reservaForm.cliente}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, cliente: value }))}
+                  />
+                  <Field
+                    label="id do cliente"
+                    placeholder="id cliente"
+                    value={reservaForm.clienteId}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, clienteId: value }))}
+                  />
+                  <Field
+                    label="id do gerente"
+                    placeholder="id gerente"
+                    value={reservaForm.gerenteId}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, gerenteId: value }))}
+                  />
+                  <Field
+                    label="id do espaco"
+                    placeholder="id espaco"
+                    value={reservaForm.espacoId}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, espacoId: value }))}
+                  />
+                  <Field
+                    label="data"
+                    placeholder="dd/mm/aaaa"
+                    value={reservaForm.data}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, data: value }))}
+                  />
+                  <Field
+                    label="lista de convidados"
+                    placeholder="nome1, nome2"
+                    value={reservaForm.convidados}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, convidados: value }))}
+                  />
+                  <Field
+                    label="servicos opcionais"
+                    placeholder="buffet, fotografos"
+                    value={reservaForm.servicos}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, servicos: value }))}
+                  />
+                  <Field
+                    label="valor"
+                    placeholder="r$ 0,00"
+                    value={reservaForm.valor}
+                    onChange={(value) => setReservaForm((prev) => ({ ...prev, valor: value }))}
+                  />
                 </div>
               )}
               <div className="action-row">
-                <button className="ghost-btn">limpar</button>
-                <button className={reservaMode === 'deletar' ? 'danger-btn' : 'primary-btn'}>
+                <button className="ghost-btn" onClick={resetReservaForm}>
+                  limpar
+                </button>
+                <button
+                  className={reservaMode === 'deletar' ? 'danger-btn' : 'primary-btn'}
+                  onClick={salvarReserva}
+                >
                   {reservaMode === 'criar' ? 'inserir' : reservaMode === 'editar' ? 'alterar' : 'excluir'}
                 </button>
               </div>
