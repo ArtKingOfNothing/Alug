@@ -376,7 +376,7 @@ function App() {
       <main className="login-layout">
         <section className="login-hero">
           <div className="hero-icon">al</div>
-          <h1>alug erp</h1>
+          <h1>alug sistema</h1>
           <p>gerencie sua operacao com agilidade e seguranca em um unico painel.</p>
           <div className="hero-tags">
             <span>gestao completa</span>
@@ -411,7 +411,7 @@ function App() {
     <div className="dashboard-shell">
       <aside className="left-nav">
         <div className="nav-logo">
-          <strong>alug erp</strong>
+          <strong>alug sistema</strong>
           <small>inovar sempre</small>
         </div>
         {menuScreens.map((screen) => (
