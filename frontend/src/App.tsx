@@ -235,6 +235,13 @@ function GroupIcon({ id }: { id: string }) {
 function App() {
   const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+  const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
+    operacao: true,
+    clientes: false,
+    espacos: false,
+    reservas: false,
+    financeiro: false,
+  })
 
   const activeTitle = useMemo(
     () => screens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
@@ -242,6 +249,13 @@ function App() {
   )
 
   const getScreen = (id: string): Screen | undefined => screens.find((screen) => screen.id === id)
+
+  const toggleGroup = (groupId: string) => {
+    setOpenGroups((prev) => ({
+      ...prev,
+      [groupId]: !prev[groupId],
+    }))
+  }
 
   const handleLogin = () => {
     setIsAuthenticated(true)
@@ -630,35 +644,46 @@ function App() {
         </div>
         {navGroups.map((group) => (
           <section key={group.id} className="nav-group">
-            <div className="nav-group-header">
-              <span className="nav-icon">
-                <GroupIcon id={group.id} />
+            <button
+              className="nav-group-toggle"
+              onClick={() => toggleGroup(group.id)}
+              aria-expanded={openGroups[group.id]}
+            >
+              <span className="nav-group-header">
+                <span className="nav-icon">
+                  <GroupIcon id={group.id} />
+                </span>
+                <span>{group.label}</span>
               </span>
-              <span>{group.label}</span>
-            </div>
-            <div className="nav-group-items">
-              {group.items.map((id) => {
-                const screen = getScreen(id)
-                if (!screen) {
-                  return null
-                }
+              <span className={openGroups[group.id] ? 'nav-chevron is-open' : 'nav-chevron'}>
+                ▾
+              </span>
+            </button>
+            {openGroups[group.id] && (
+              <div className="nav-group-items">
+                {group.items.map((id) => {
+                  const screen = getScreen(id)
+                  if (!screen) {
+                    return null
+                  }
 
-                return (
-                  <button
-                    key={screen.id}
-                    onClick={() => setActiveScreen(screen.id)}
-                    className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
-                  >
-                    <span className="nav-btn-inner">
-                      <span className="nav-icon">
-                        <NavIcon id={screen.id} />
+                  return (
+                    <button
+                      key={screen.id}
+                      onClick={() => setActiveScreen(screen.id)}
+                      className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
+                    >
+                      <span className="nav-btn-inner">
+                        <span className="nav-icon">
+                          <NavIcon id={screen.id} />
+                        </span>
+                        <span>{screen.label}</span>
                       </span>
-                      <span>{screen.label}</span>
-                    </span>
-                  </button>
-                )
-              })}
-            </div>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
           </section>
         ))}
       </aside>
