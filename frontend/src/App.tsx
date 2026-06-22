@@ -7,6 +7,12 @@ type Screen = {
   title: string
 }
 
+type NavGroup = {
+  id: string
+  label: string
+  items: string[]
+}
+
 type SpaceCard = {
   name: string
   price: string
@@ -49,6 +55,32 @@ const screens: Screen[] = [
   { id: 'alterar-espaco', label: 'alterar espaco', title: 'alterar espaco' },
   { id: 'deletar-espaco', label: 'deletar espaco', title: 'deletar espaco' },
   { id: 'pagamento', label: 'pagamento', title: 'metodo de pagamento' },
+]
+
+const navGroups: NavGroup[] = [
+  { id: 'operacao', label: 'operacao', items: ['home', 'gerente'] },
+  {
+    id: 'clientes',
+    label: 'clientes',
+    items: ['gerencia-clientes', 'criar-cliente', 'alterar-cliente', 'deletar-cliente'],
+  },
+  {
+    id: 'espacos',
+    label: 'espacos',
+    items: ['espacos', 'gerencia-espacos', 'criar-espaco', 'alterar-espaco', 'deletar-espaco'],
+  },
+  {
+    id: 'reservas',
+    label: 'reservas',
+    items: [
+      'gerencia-reservas',
+      'criar-reserva',
+      'alterar-reserva',
+      'deletar-reserva',
+      'lista-convidados',
+    ],
+  },
+  { id: 'financeiro', label: 'financeiro', items: ['pagamento'] },
 ]
 
 const spaceCards: SpaceCard[] = [
@@ -159,16 +191,57 @@ function NavIcon({ id }: { id: string }) {
   }
 }
 
+function GroupIcon({ id }: { id: string }) {
+  switch (id) {
+    case 'operacao':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2m1 10.6V7h-2v7h6v-2z" />
+        </svg>
+      )
+    case 'clientes':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M16 11a4 4 0 1 0-4-4 4 4 0 0 0 4 4m-8 0a3 3 0 1 0-3-3 3 3 0 0 0 3 3m0 2c-2.7 0-5 1.3-5 3v2h8v-2c0-.9.3-1.7.9-2.4A9.6 9.6 0 0 0 8 13m8 0c-2.7 0-5 1.3-5 3v2h10v-2c0-1.7-2.3-3-5-3" />
+        </svg>
+      )
+    case 'espacos':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M3 20h18v1H3zM5 19V8h14v11h-2v-4H7v4zm3-8h2v2H8zm6 0h2v2h-2z" />
+        </svg>
+      )
+    case 'reservas':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M7 2h2v2h6V2h2v2h3a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h3zm12 8H5v10h14zm-9 3h4v2h-4z" />
+        </svg>
+      )
+    case 'financeiro':
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2a8 8 0 0 0-2 15.7V20h4v-2.3A8 8 0 0 0 12 2m1 12.9V16h-2v-1.1a4 4 0 0 1-3-3.9h2a2 2 0 0 0 4 0c0-1.1-.9-1.5-2.4-2S8 7.8 8 6a4 4 0 0 1 3-3.9V1.9h2v.2a4 4 0 0 1 3 3.9h-2a2 2 0 0 0-4 0c0 1 .8 1.4 2.4 2S16 9.2 16 11a4 4 0 0 1-3 3.9" />
+        </svg>
+      )
+    default:
+      return (
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M4 4h16v16H4z" />
+        </svg>
+      )
+  }
+}
+
 function App() {
   const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
-  const menuScreens = screens.filter((screen) => screen.id !== 'login')
-
   const activeTitle = useMemo(
-    () => menuScreens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
-    [activeScreen, menuScreens],
+    () => screens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
+    [activeScreen],
   )
+
+  const getScreen = (id: string): Screen | undefined => screens.find((screen) => screen.id === id)
 
   const handleLogin = () => {
     setIsAuthenticated(true)
@@ -555,19 +628,38 @@ function App() {
           <strong>alug sistema</strong>
           <small>inovar sempre</small>
         </div>
-        {menuScreens.map((screen) => (
-          <button
-            key={screen.id}
-            onClick={() => setActiveScreen(screen.id)}
-            className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
-          >
-            <span className="nav-btn-inner">
+        {navGroups.map((group) => (
+          <section key={group.id} className="nav-group">
+            <div className="nav-group-header">
               <span className="nav-icon">
-                <NavIcon id={screen.id} />
+                <GroupIcon id={group.id} />
               </span>
-              <span>{screen.label}</span>
-            </span>
-          </button>
+              <span>{group.label}</span>
+            </div>
+            <div className="nav-group-items">
+              {group.items.map((id) => {
+                const screen = getScreen(id)
+                if (!screen) {
+                  return null
+                }
+
+                return (
+                  <button
+                    key={screen.id}
+                    onClick={() => setActiveScreen(screen.id)}
+                    className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
+                  >
+                    <span className="nav-btn-inner">
+                      <span className="nav-icon">
+                        <NavIcon id={screen.id} />
+                      </span>
+                      <span>{screen.label}</span>
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
+          </section>
         ))}
       </aside>
 
