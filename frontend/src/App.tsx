@@ -377,12 +377,6 @@ function App() {
         <section className="login-hero">
           <div className="hero-icon">al</div>
           <h1>alug sistema</h1>
-          <p>gerencie sua operacao com agilidade e seguranca em um unico painel.</p>
-          <div className="hero-tags">
-            <span>gestao completa</span>
-            <span>relatorios</span>
-            <span>seguranca</span>
-          </div>
         </section>
 
         <section className="login-panel">
