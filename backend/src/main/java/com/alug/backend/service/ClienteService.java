@@ -50,6 +50,10 @@ public class ClienteService {
         return clientes;
     }
 
+    public List<Cliente> listarTodos() {
+        return clienteRepository.findAll();
+    }
+
     // RF-005
     public Cliente alterarCliente(Integer idCliente, Cliente dadosAtualizados) {
         Cliente clienteExistente = clienteRepository.findById(idCliente)

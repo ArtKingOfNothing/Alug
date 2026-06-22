@@ -17,4 +17,6 @@ public interface GerenteRepository extends JpaRepository<Gerente, Integer> {
     Optional<Gerente> findByEmailAndSenha(String email, String senha);
 
     Optional<Gerente> findByCpf(String cpf);
+
+    Gerente findByEmail(String email);
 }
