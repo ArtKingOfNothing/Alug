@@ -2,6 +2,7 @@ package com.alug.backend.model;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Data
 @Entity
@@ -14,10 +15,13 @@ public class Espaco {
     private Integer idEspaco;
 
     @Column(nullable = false)
+    private String nome;
+
+    @Column(nullable = false)
     private Integer capacidade;
 
     @Column(nullable = false)
-    private Float valor;
+    private BigDecimal valor;
 
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "enderecos_id_endereco", nullable = false, unique = true)
