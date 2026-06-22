@@ -97,7 +97,7 @@ function SectionCard({
 }
 
 function App() {
-  const [activeScreen, setActiveScreen] = useState<string>('login')
+  const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
 
   const menuScreens = screens.filter((screen) => screen.id !== 'login')
@@ -114,7 +114,7 @@ function App() {
 
   const handleLogout = () => {
     setIsAuthenticated(false)
-    setActiveScreen('login')
+    setActiveScreen('home')
   }
 
   const renderScreen = () => {
@@ -373,48 +373,72 @@ function App() {
 
   if (!isAuthenticated) {
     return (
-      <div className="app-shell">
-        <header className="topbar">
-          <div className="brand">
-            <span className="brand-mark">alug</span>
-            <small>sistema web</small>
+      <main className="login-layout">
+        <section className="login-hero">
+          <div className="hero-icon">al</div>
+          <h1>alug erp</h1>
+          <p>gerencie sua operacao com agilidade e seguranca em um unico painel.</p>
+          <div className="hero-tags">
+            <span>gestao completa</span>
+            <span>relatorios</span>
+            <span>seguranca</span>
           </div>
-        </header>
-        <main className="login-stage">
-          <div className="login-card">{renderScreen()}</div>
-        </main>
-      </div>
+        </section>
+
+        <section className="login-panel">
+          <div className="login-form-card">
+            <div className="login-brand">alug</div>
+            <div className="login-role-switch">
+              <button className="role-btn is-active">administrador</button>
+              <button className="role-btn">funcionario</button>
+            </div>
+            <p className="login-caption">informe e-mail e senha para acessar o sistema.</p>
+            <div className="grid-one login-fields">
+              <Field label="e-mail" placeholder="seu@email.com" />
+              <Field label="senha" placeholder="digite sua senha" />
+            </div>
+            <button className="primary-btn login-submit" onClick={handleLogin}>
+              entrar como administrador
+            </button>
+          </div>
+          <small className="login-footer">desenvolvido por equipe alug</small>
+        </section>
+      </main>
     )
   }
 
   return (
-    <div className="app-shell">
-      <header className="topbar">
-        <div className="brand">
-          <span className="brand-mark">alug</span>
-          <small>sistema web</small>
+    <div className="dashboard-shell">
+      <aside className="left-nav">
+        <div className="nav-logo">
+          <strong>alug erp</strong>
+          <small>inovar sempre</small>
         </div>
-      </header>
+        {menuScreens.map((screen) => (
+          <button
+            key={screen.id}
+            onClick={() => setActiveScreen(screen.id)}
+            className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
+          >
+            {screen.label}
+          </button>
+        ))}
+      </aside>
 
-      <main className="workspace">
-        <aside className="left-nav">
-          {menuScreens.map((screen) => (
-            <button
-              key={screen.id}
-              onClick={() => setActiveScreen(screen.id)}
-              className={screen.id === activeScreen ? 'nav-btn is-active' : 'nav-btn'}
-            >
-              {screen.label}
-            </button>
-          ))}
-        </aside>
+      <main className="workspace-main">
+        <header className="topbar">
+          <div className="header-title-group">
+            <button className="menu-dot">☰</button>
+            <h1>painel</h1>
+          </div>
+          <button className="ghost-btn" onClick={handleLogout}>
+            sair
+          </button>
+        </header>
 
         <section className="content-area">
           <div className="content-header">
-            <h1>{activeTitle}</h1>
-            <button className="ghost-btn" onClick={handleLogout}>
-              sair
-            </button>
+            <h2>{activeTitle}</h2>
           </div>
           <div className="content-body">{renderScreen()}</div>
         </section>
