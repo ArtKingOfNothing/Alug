@@ -33,5 +33,10 @@ public class ClienteService {
         clienteRepository.delete(cliente);
     }
 
+    // RF-004
+    public Cliente consultarClientePorId(Integer idCliente) {
+        return clienteRepository.findById(idCliente)
+                .orElseThrow(() -> new IllegalArgumentException("Cliente inexistente."));
+    }
 
 }
