@@ -1,9 +1,9 @@
-@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&family=Orbitron:wght@500;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700&display=swap');
 
 :root {
   font-family: 'Exo 2', sans-serif;
-  color: #dce7ff;
-  background: #050915;
+  color: #1f3a59;
+  background: #f5f8ff;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
@@ -17,11 +17,7 @@
 body {
   margin: 0;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 12% 14%, rgba(30, 64, 175, 0.3), transparent 34%),
-    radial-gradient(circle at 82% 5%, rgba(6, 182, 212, 0.18), transparent 32%),
-    #050915;
-  animation: wave 12s ease-in-out infinite alternate;
+  background: #f5f8ff;
 }
 
 #root {
@@ -31,13 +27,4 @@ body {
 button,
 input {
   font-family: inherit;
-}
-
-@keyframes wave {
-  from {
-    background-position: 0 0, 0 0, 0 0;
-  }
-  to {
-    background-position: 50px -30px, -30px 20px, 0 0;
-  }
 }

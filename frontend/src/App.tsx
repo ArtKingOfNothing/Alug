@@ -97,12 +97,25 @@ function SectionCard({
 }
 
 function App() {
-  const [activeScreen, setActiveScreen] = useState<string>('home')
+  const [activeScreen, setActiveScreen] = useState<string>('login')
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
+
+  const menuScreens = screens.filter((screen) => screen.id !== 'login')
 
   const activeTitle = useMemo(
-    () => screens.find((screen) => screen.id === activeScreen)?.title ?? 'painel',
-    [activeScreen],
+    () => menuScreens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
+    [activeScreen, menuScreens],
   )
+
+  const handleLogin = () => {
+    setIsAuthenticated(true)
+    setActiveScreen('home')
+  }
+
+  const handleLogout = () => {
+    setIsAuthenticated(false)
+    setActiveScreen('login')
+  }
 
   const renderScreen = () => {
     switch (activeScreen) {
@@ -113,9 +126,10 @@ function App() {
               <Field label="email" placeholder="exemplo@alug.com" />
               <Field label="senha" placeholder="••••••••" />
             </div>
-            <div className="action-row">
-              <button className="ghost-btn">voltar</button>
-              <button className="primary-btn">entrar</button>
+            <div className="action-row login-action-row">
+              <button className="primary-btn" onClick={handleLogin}>
+                entrar
+              </button>
             </div>
           </SectionCard>
         )
@@ -357,22 +371,34 @@ function App() {
     }
   }
 
+  if (!isAuthenticated) {
+    return (
+      <div className="app-shell">
+        <header className="topbar">
+          <div className="brand">
+            <span className="brand-mark">alug</span>
+            <small>sistema web</small>
+          </div>
+        </header>
+        <main className="login-stage">
+          <div className="login-card">{renderScreen()}</div>
+        </main>
+      </div>
+    )
+  }
+
   return (
     <div className="app-shell">
       <header className="topbar">
         <div className="brand">
           <span className="brand-mark">alug</span>
-          <small>web control center</small>
-        </div>
-        <div className="status-pill">
-          <span></span>
-          ambiente homologacao
+          <small>sistema web</small>
         </div>
       </header>
 
       <main className="workspace">
         <aside className="left-nav">
-          {screens.map((screen) => (
+          {menuScreens.map((screen) => (
             <button
               key={screen.id}
               onClick={() => setActiveScreen(screen.id)}
@@ -386,7 +412,9 @@ function App() {
         <section className="content-area">
           <div className="content-header">
             <h1>{activeTitle}</h1>
-            <button className="ghost-btn">sair</button>
+            <button className="ghost-btn" onClick={handleLogout}>
+              sair
+            </button>
           </div>
           <div className="content-body">{renderScreen()}</div>
         </section>
