@@ -44,6 +44,11 @@ const screens: Screen[] = [
     label: 'gerenciamento reservas',
     title: 'gerenciamento de reservas',
   },
+  { id: 'alterar-reserva', label: 'alterar reserva', title: 'alterar reserva' },
+  { id: 'deletar-reserva', label: 'deletar reserva', title: 'deletar reserva' },
+  { id: 'alterar-espaco', label: 'alterar espaco', title: 'alterar espaco' },
+  { id: 'deletar-espaco', label: 'deletar espaco', title: 'deletar espaco' },
+  { id: 'pagamento', label: 'pagamento', title: 'metodo de pagamento' },
 ]
 
 const spaceCards: SpaceCard[] = [
@@ -364,6 +369,94 @@ function App() {
               <Field label="id ou cliente" placeholder="buscar reserva" />
             </SectionCard>
           </>
+        )
+
+      case 'alterar-reserva':
+        return (
+          <SectionCard heading="alterar reserva">
+            <div className="grid-two">
+              <Field label="id do cliente" placeholder="id cliente" />
+              <Field label="id do gerente" placeholder="id gerente" />
+              <Field label="id do espaco" placeholder="id espaco" />
+              <Field label="data" placeholder="dd/mm/aaaa" />
+              <Field label="lista de convidados" placeholder="nome1, nome2" />
+              <Field label="servicos opcionais" placeholder="buffet, fotografos" />
+              <Field label="valor" placeholder="r$ 0,00" />
+            </div>
+            <div className="action-row">
+              <button className="ghost-btn">voltar</button>
+              <button className="primary-btn">alterar</button>
+            </div>
+          </SectionCard>
+        )
+
+      case 'deletar-reserva':
+        return (
+          <SectionCard heading="deletar reserva">
+            <div className="grid-one">
+              <Field label="reserva a excluir" placeholder="id da reserva" />
+              <Field label="confirmacao" placeholder="digite excluir para confirmar" />
+            </div>
+            <div className="action-row">
+              <button className="ghost-btn">voltar</button>
+              <button className="danger-btn">excluir</button>
+            </div>
+          </SectionCard>
+        )
+
+      case 'alterar-espaco':
+        return (
+          <SectionCard heading="alterar espaco">
+            <div className="grid-two">
+              <Field label="endereco" placeholder="rua, numero, bairro" />
+              <Field label="capacidade" placeholder="numero de pessoas" />
+              <Field label="valor" placeholder="r$ 0,00" />
+            </div>
+            <div className="action-row">
+              <button className="ghost-btn">voltar</button>
+              <button className="primary-btn">alterar</button>
+            </div>
+          </SectionCard>
+        )
+
+      case 'deletar-espaco':
+        return (
+          <SectionCard heading="deletar espaco">
+            <div className="grid-one">
+              <Field label="espaco a excluir" placeholder="id do espaco" />
+              <Field label="confirmacao" placeholder="digite excluir para confirmar" />
+            </div>
+            <div className="action-row">
+              <button className="ghost-btn">voltar</button>
+              <button className="danger-btn">excluir</button>
+            </div>
+          </SectionCard>
+        )
+
+      case 'pagamento':
+        return (
+          <SectionCard heading="metodo de pagamento">
+            <div className="grid-two">
+              <div className="quick-actions">
+                <button className="chip-btn">cartao de debito</button>
+                <button className="chip-btn">cartao de credito</button>
+                <button className="chip-btn">pix</button>
+              </div>
+              <div className="payment-info">
+                <h4>dados</h4>
+                <p>titular: nome do cliente</p>
+                <p>cpf: 000.000.000-00</p>
+                <p>conta: banco alug</p>
+                <p>agencia: 0001</p>
+                <p>conta corrente: 12345-6</p>
+                <p>chave pix: contato@alug.com</p>
+              </div>
+            </div>
+            <div className="action-row">
+              <button className="ghost-btn">cancelar</button>
+              <button className="primary-btn">registrar pagamento</button>
+            </div>
+          </SectionCard>
         )
 
       default:
