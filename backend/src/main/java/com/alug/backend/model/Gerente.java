@@ -46,9 +46,9 @@ public class Gerente implements UserDetails {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
-    private PerfilAcesso perfil;
+    private PerfilAcesso perfil = PerfilAcesso.GERENTE_COMUM;
 
-    @ManyToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name = "enderecos_id_endereco", nullable = false)
     private Endereco endereco;
 
