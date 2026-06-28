@@ -175,6 +175,84 @@ Alug/
 ├─ Padrões Adotados/               # Regras e padrões de verificação/análise
 └─ README.md                       # Documento principal do projeto
 ```
+# 6. Padrões de Uso do Git
+
+Esta seção estabelece as regras de utilização do Git e do GitHub adotadas pela equipe, com o objetivo de padronizar o desenvolvimento colaborativo, facilitar o controle de versões, manter um histórico organizado e garantir a rastreabilidade das alterações realizadas durante o projeto.
+
+## 6.1. Organização de Pastas
+
+O repositório é organizado de forma a separar o código-fonte da documentação do projeto, facilitando a manutenção e a localização dos arquivos.
+
+A estrutura adotada é composta pelas seguintes pastas:
+
+* **docs/**: contém toda a documentação do projeto, como requisitos, diagramas, atas de reunião e demais documentos produzidos pela equipe;
+* **src/**: contém o código-fonte da aplicação;
+* **tests/**: armazena os testes desenvolvidos para o sistema;
+* **assets/**: reúne imagens, ícones e outros arquivos utilizados pelo projeto.
+
+Sempre que possível, os documentos serão escritos em formato **Markdown (.md)**, permitindo visualização direta no GitHub e melhor controle de versionamento.
+
+---
+
+## 6.2. Uso de Branches
+
+A branch **main** representa a versão estável do projeto e não deve receber commits diretamente. Todas as alterações deverão ser desenvolvidas em branches específicas e posteriormente integradas por meio de Pull Request.
+
+As branches deverão seguir um padrão de nomenclatura que identifique o tipo de alteração realizada, como desenvolvimento de novas funcionalidades, correções de erros ou atualização da documentação.
+
+Os nomes das branches deverão ser escritos em letras minúsculas, utilizando hífen para separar palavras quando necessário e, sempre que possível, referenciar o requisito funcional correspondente.
+
+Após a aprovação e integração na branch **main**, a branch de desenvolvimento deverá ser removida para manter o repositório organizado.
+
+---
+
+## 6.3. Padrão de Commits
+
+As mensagens de commit deverão ser claras, objetivas e seguir um padrão único para facilitar o entendimento do histórico de alterações.
+
+Cada mensagem deverá indicar o tipo da alteração realizada, seguido de uma breve descrição da modificação efetuada.
+
+Os tipos de commit adotados pela equipe são:
+
+| Tipo         | Utilização                                                 |
+| ------------ | ---------------------------------------------------------- |
+| **feat**     | Implementação de nova funcionalidade                       |
+| **fix**      | Correção de erros                                          |
+| **docs**     | Alterações na documentação                                 |
+| **style**    | Alterações de formatação sem modificar a lógica do sistema |
+| **refactor** | Reestruturação de código sem alterar seu comportamento     |
+| **test**     | Inclusão ou modificação de testes                          |
+| **chore**    | Configurações, manutenção e atualização de dependências    |
+
+Sempre que possível, cada commit deverá representar apenas uma alteração específica, facilitando a rastreabilidade, a revisão e a reversão de mudanças, quando necessário.
+
+---
+
+## 6.4. Fluxo de Trabalho
+
+O processo de desenvolvimento seguirá as seguintes etapas:
+
+1. Atualizar a branch principal antes de iniciar uma nova tarefa.
+2. Criar uma branch específica para a funcionalidade, correção ou documentação a ser desenvolvida.
+3. Implementar as alterações realizando commits pequenos e frequentes.
+4. Enviar a branch para o repositório remoto.
+5. Abrir um Pull Request para integração com a branch principal.
+6. Após a revisão e aprovação por outro integrante da equipe, realizar o merge da branch.
+7. Excluir a branch utilizada após sua integração.
+
+Esse fluxo garante maior organização do projeto, reduz conflitos entre alterações simultâneas e facilita o acompanhamento da evolução do desenvolvimento.
+
+---
+
+## 6.5. Arquivo `.gitignore`
+
+O projeto utiliza um arquivo **.gitignore** localizado na raiz do repositório para impedir o versionamento de arquivos temporários, dependências, arquivos de configuração local e artefatos gerados automaticamente.
+
+Serão ignorados arquivos compilados, arquivos temporários, dependências instaladas por gerenciadores de pacotes, diretórios de compilação, arquivos de configuração das IDEs, arquivos do sistema operacional e arquivos de configuração locais utilizados apenas durante o desenvolvimento.
+
+Essa configuração mantém o repositório organizado, evita o armazenamento de arquivos desnecessários e reduz problemas causados pelo compartilhamento de configurações específicas de cada ambiente de desenvolvimento.
+
+
 
 ## Versionamento e Releases
 
