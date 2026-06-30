@@ -228,23 +228,7 @@ Sempre que possível, cada commit deverá representar apenas uma alteração esp
 
 ---
 
-## 6.4. Fluxo de Trabalho
-
-O processo de desenvolvimento seguirá as seguintes etapas:
-
-1. Atualizar a branch principal antes de iniciar uma nova tarefa.
-2. Criar uma branch específica para a funcionalidade, correção ou documentação a ser desenvolvida.
-3. Implementar as alterações realizando commits pequenos e frequentes.
-4. Enviar a branch para o repositório remoto.
-5. Abrir um Pull Request para integração com a branch principal.
-6. Após a revisão e aprovação por outro integrante da equipe, realizar o merge da branch.
-7. Excluir a branch utilizada após sua integração.
-
-Esse fluxo garante maior organização do projeto, reduz conflitos entre alterações simultâneas e facilita o acompanhamento da evolução do desenvolvimento.
-
----
-
-## 6.5. Arquivo `.gitignore`
+## 6.4. Arquivo `.gitignore`
 
 O projeto utiliza um arquivo **.gitignore** localizado na raiz do repositório para impedir o versionamento de arquivos temporários, dependências, arquivos de configuração local e artefatos gerados automaticamente.
 
