@@ -1,4 +1,26 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useState, useEffect, useCallback, type ReactNode } from 'react'
+import {
+  login as loginApi,
+  listarClientes,
+  criarCliente as criarClienteApi,
+  atualizarCliente as atualizarClienteApi,
+  deletarCliente as deletarClienteApi,
+  listarEspacos,
+  criarEspaco as criarEspacoApi,
+  atualizarEspaco as atualizarEspacoApi,
+  deletarEspaco as deletarEspacoApi,
+  listarReservas,
+  criarReserva as criarReservaApi,
+  atualizarReserva as atualizarReservaApi,
+  deletarReserva as deletarReservaApi,
+  listarConvidadosPorReserva,
+  adicionarConvidado as adicionarConvidadoApi,
+  removerConvidado as removerConvidadoApi,
+  type ClienteApi,
+  type EspacoApi,
+  type ReservaApi,
+  type ConvidadoApi,
+} from './api'
 import './App.css'
 
 type Screen = {
@@ -13,41 +35,43 @@ type NavGroup = {
   items: string[]
 }
 
-type SpaceCard = {
-  name: string
-  price: string
-  capacity: string
-  image: string
-}
-
-type ClienteItem = {
-  id: number
+type ClienteFormState = {
+  apiId: number | null
   nome: string
   cpf: string
   telefone: string
   email: string
-  endereco: string
 }
 
-type EspacoItem = {
-  id: number
-  nome: string
+type EspacoFormState = {
+  apiId: number | null
   capacidade: string
   valor: string
-  endereco: string
+  cep: string
+  logradouro: string
+  numero: string
+  bairro: string
+  cidade: string
+  estado: string
 }
 
-type ReservaItem = {
-  id: number
-  cliente: string
-  clienteId: string
-  gerenteId: string
-  espacoId: string
-  data: string
-  convidados: string
-  servicos: string
-  valor: string
+type ReservaFormState = {
+  apiId: number | null
+  dataEvento: string
+  quantidadeConvidados: string
+  valorTotal: string
+  idCliente: string
+  idGerente: string
+  idEspaco: string
 }
+
+type QuickForm = { dataEvento: string; quantidadeConvidados: string; idCliente: string }
+
+const SPACE_IMAGES = [
+  'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80',
+  'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
+]
 
 const screens: Screen[] = [
   { id: 'login', label: 'login', title: 'acesso ao sistema' },
@@ -106,92 +130,11 @@ const navGroups: NavGroup[] = [
   { id: 'financeiro', label: 'financeiro', items: ['pagamento'] },
 ]
 
-const spaceCards: SpaceCard[] = [
-  {
-    name: 'resort neo atlanta',
-    price: 'r$ 1.280 / dia',
-    capacity: '42 pessoas',
-    image:
-      'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'casa aurora',
-    price: 'r$ 820 / dia',
-    capacity: '20 pessoas',
-    image:
-      'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=800&q=80',
-  },
-  {
-    name: 'hall orbit',
-    price: 'r$ 740 / dia',
-    capacity: '30 pessoas',
-    image:
-      'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80',
-  },
-]
+const EMPTY_CLIENTE_FORM: ClienteFormState = { apiId: null, nome: '', cpf: '', telefone: '', email: '' }
+const EMPTY_ESPACO_FORM: EspacoFormState = { apiId: null, capacidade: '', valor: '', cep: '', logradouro: '', numero: '', bairro: '', cidade: '', estado: 'MG' }
+const EMPTY_RESERVA_FORM: ReservaFormState = { apiId: null, dataEvento: '', quantidadeConvidados: '', valorTotal: '', idCliente: '', idGerente: '1', idEspaco: '' }
 
-const primaryActions = ['criar novo cliente', 'fazer reserva', 'adicionar novo espaco']
 
-const initialClientes: ClienteItem[] = [
-  {
-    id: 1,
-    nome: 'ana monteiro',
-    cpf: '123.456.789-00',
-    telefone: '(35) 99999-1111',
-    email: 'ana@email.com',
-    endereco: 'rua a, 10',
-  },
-  {
-    id: 2,
-    nome: 'carlos neto',
-    cpf: '987.654.321-00',
-    telefone: '(35) 98888-2222',
-    email: 'carlos@email.com',
-    endereco: 'rua b, 20',
-  },
-]
-
-const initialEspacos: EspacoItem[] = [
-  {
-    id: 1,
-    nome: 'resort neo atlanta',
-    capacidade: '42',
-    valor: '1280',
-    endereco: 'av central, 100',
-  },
-  {
-    id: 2,
-    nome: 'hall orbit',
-    capacidade: '30',
-    valor: '740',
-    endereco: 'rua das palmeiras, 80',
-  },
-]
-
-const initialReservas: ReservaItem[] = [
-  {
-    id: 1,
-    cliente: 'ana monteiro',
-    clienteId: '1',
-    gerenteId: '1',
-    espacoId: '1',
-    data: '15/09/2026',
-    convidados: 'maria, pedro',
-    servicos: 'buffet',
-    valor: '2500',
-  },
-  {
-    id: 2,
-    cliente: 'carlos neto',
-    clienteId: '2',
-    gerenteId: '1',
-    espacoId: '2',
-    data: '23/10/2026',
-    convidados: 'julia, paulo',
-    servicos: 'fotografia',
-    valor: '1800',
-  },
-]
 
 function Field({
   label,
@@ -349,19 +292,21 @@ function DotsIcon() {
   )
 }
 
+function TrashIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M9 3h6l1 1h4v2H4V4h4zm-2 5h10l-1 13H8zm5 2h-2v9h2zm4 0h-2l-.5 9h2zm-8 0H6l.5 9H9z" />
+    </svg>
+  )
+}
+
 function App() {
   const [activeScreen, setActiveScreen] = useState<string>('home')
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false)
   const [loginEmail, setLoginEmail] = useState<string>('admin@alug.com')
   const [loginSenha, setLoginSenha] = useState<string>('admin123')
-  const [resumoDashboard] = useState({
-    reservasHoje: 0,
-    ocupacaoMedia: 0,
-    ticketsAbertos: 0,
-    clientesBase: 0,
-    espacosBase: 0,
-    reservasBase: 0,
-  })
+  const [loginError, setLoginError] = useState<string>('')
+  const [isLoadingLogin, setIsLoadingLogin] = useState<boolean>(false)
   const [openGroups, setOpenGroups] = useState<Record<string, boolean>>({
     operacao: true,
     clientes: false,
@@ -369,39 +314,26 @@ function App() {
     reservas: false,
     financeiro: false,
   })
-  const [clienteMode, setClienteMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
-  const [espacoMode, setEspacoMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
-  const [reservaMode, setReservaMode] = useState<'criar' | 'editar' | 'deletar'>('criar')
-  const [clientes, setClientes] = useState<ClienteItem[]>(initialClientes)
-  const [espacos, setEspacos] = useState<EspacoItem[]>(initialEspacos)
-  const [reservas, setReservas] = useState<ReservaItem[]>(initialReservas)
+  const [clienteMode, setClienteMode] = useState<'criar' | 'editar' | 'deletar' | null>(null)
+  const [espacoMode, setEspacoMode] = useState<'criar' | 'editar' | 'deletar' | null>(null)
+  const [reservaMode, setReservaMode] = useState<'criar' | 'editar' | 'deletar' | null>(null)
+  const [clientesApi, setClientesApi] = useState<ClienteApi[]>([])
   const [openActionKey, setOpenActionKey] = useState<string | null>(null)
-  const [clienteForm, setClienteForm] = useState<ClienteItem>({
-    id: 0,
-    nome: '',
-    cpf: '',
-    telefone: '',
-    email: '',
-    endereco: '',
-  })
-  const [espacoForm, setEspacoForm] = useState<EspacoItem>({
-    id: 0,
-    nome: '',
-    capacidade: '',
-    valor: '',
-    endereco: '',
-  })
-  const [reservaForm, setReservaForm] = useState<ReservaItem>({
-    id: 0,
-    cliente: '',
-    clienteId: '',
-    gerenteId: '',
-    espacoId: '',
-    data: '',
-    convidados: '',
-    servicos: '',
-    valor: '',
-  })
+  const [opError, setOpError] = useState('')
+  const [clienteForm, setClienteForm] = useState<ClienteFormState>(EMPTY_CLIENTE_FORM)
+  const [espacoForm, setEspacoForm] = useState<EspacoFormState>(EMPTY_ESPACO_FORM)
+  const [reservaForm, setReservaForm] = useState<ReservaFormState>(EMPTY_RESERVA_FORM)
+
+  const [espacosApi, setEspacosApi] = useState<EspacoApi[]>([])
+  const [reservasApi, setReservasApi] = useState<ReservaApi[]>([])
+  const [reservandoEspaco, setReservandoEspaco] = useState<EspacoApi | null>(null)
+  const [quickForm, setQuickForm] = useState<QuickForm>({ dataEvento: '', quantidadeConvidados: '', idCliente: '' })
+  const [quickStatus, setQuickStatus] = useState<'idle' | 'loading' | 'ok' | 'error'>('idle')
+  const [quickErro, setQuickErro] = useState('')
+  const [payMethod, setPayMethod] = useState<'pix' | 'credito' | 'debito' | 'boleto' | null>(null)
+  const [convidadosPorReserva, setConvidadosPorReserva] = useState<Record<number, ConvidadoApi[]>>({})
+  const [novoConvidadoForm, setNovoConvidadoForm] = useState({ nome: '', telefone: '' })
+  const [novoConvidadoReservaId, setNovoConvidadoReservaId] = useState<number | null>(null)
 
   const activeTitle = useMemo(
     () => screens.find((screen) => screen.id === activeScreen)?.title ?? 'painel inicial',
@@ -410,10 +342,21 @@ function App() {
 
   const getScreen = (id: string): Screen | undefined => screens.find((screen) => screen.id === id)
 
-  const handleLogin = () => {
-    // login em modo demonstracao: libera o acesso sem validacao no backend.
-    setIsAuthenticated(true)
-    setActiveScreen('home')
+  const handleLogin = async () => {
+    setLoginError('')
+    setIsLoadingLogin(true)
+
+    try {
+      const resposta = await loginApi(loginEmail, loginSenha)
+      localStorage.setItem('alug_token', resposta.token)
+      setIsAuthenticated(true)
+      setActiveScreen('home')
+    } catch (error) {
+      const mensagem = error instanceof Error ? error.message : 'nao foi possivel autenticar'
+      setLoginError(mensagem)
+    } finally {
+      setIsLoadingLogin(false)
+    }
   }
 
   const toggleGroup = (groupId: string) => {
@@ -424,78 +367,167 @@ function App() {
   }
 
   const handleLogout = () => {
+    localStorage.removeItem('alug_token')
     setIsAuthenticated(false)
     setActiveScreen('home')
   }
 
-  const resetClienteForm = () => {
-    setClienteForm({ id: 0, nome: '', cpf: '', telefone: '', email: '', endereco: '' })
+  useEffect(() => {
+    if (!isAuthenticated) return
+    const token = localStorage.getItem('alug_token') ?? ''
+    listarClientes(token).then(setClientesApi).catch(() => {})
+    listarEspacos(token).then(setEspacosApi).catch(() => {})
+    listarReservas(token).then(setReservasApi).catch(() => {})
+  }, [isAuthenticated])
+
+  const isReservado = (idEspaco: number) => {
+    const hoje = new Date().toISOString().slice(0, 10)
+    return reservasApi.find((r) => r.idEspaco === idEspaco && r.dataEvento >= hoje)
   }
 
-  const resetEspacoForm = () => {
-    setEspacoForm({ id: 0, nome: '', capacidade: '', valor: '', endereco: '' })
+  const handleQuickReserva = async () => {
+    if (!reservandoEspaco) return
+    setQuickStatus('loading')
+    setQuickErro('')
+    const token = localStorage.getItem('alug_token') ?? ''
+    try {
+      await criarReservaApi(
+        {
+          dataEvento: quickForm.dataEvento,
+          quantidadeConvidados: Number(quickForm.quantidadeConvidados) || 1,
+          valorTotal: reservandoEspaco.valor,
+          idCliente: Number(quickForm.idCliente) || 1,
+          idGerente: 1,
+          idEspaco: reservandoEspaco.idEspaco,
+        },
+        token,
+      )
+      setQuickStatus('ok')
+      listarReservas(token).then(setReservasApi).catch(() => {})
+      setTimeout(() => {
+        setReservandoEspaco(null)
+        setQuickStatus('idle')
+        setQuickForm({ dataEvento: '', quantidadeConvidados: '', idCliente: '' })
+      }, 1800)
+    } catch (err) {
+      setQuickErro(err instanceof Error ? err.message : 'erro ao criar reserva')
+      setQuickStatus('error')
+    }
   }
 
-  const resetReservaForm = () => {
-    setReservaForm({
-      id: 0,
-      cliente: '',
-      clienteId: '',
-      gerenteId: '',
-      espacoId: '',
-      data: '',
-      convidados: '',
-      servicos: '',
-      valor: '',
-    })
+  const resetClienteForm = () => setClienteForm(EMPTY_CLIENTE_FORM)
+  const resetEspacoForm = () => setEspacoForm(EMPTY_ESPACO_FORM)
+  const resetReservaForm = () => setReservaForm(EMPTY_RESERVA_FORM)
+
+  const carregarConvidados = useCallback(async (idReserva: number) => {
+    const token = localStorage.getItem('alug_token') ?? ''
+    try {
+      const lista = await listarConvidadosPorReserva(idReserva, token)
+      setConvidadosPorReserva((prev) => ({ ...prev, [idReserva]: lista }))
+    } catch {
+      setConvidadosPorReserva((prev) => ({ ...prev, [idReserva]: [] }))
+    }
+  }, [])
+
+  const handleRemoverConvidado = async (idReserva: number, idConvidado: number) => {
+    const token = localStorage.getItem('alug_token') ?? ''
+    try {
+      await removerConvidadoApi(idReserva, idConvidado, token)
+      setConvidadosPorReserva((prev) => ({
+        ...prev,
+        [idReserva]: (prev[idReserva] ?? []).filter((c) => c.idConvidado !== idConvidado),
+      }))
+    } catch { /* silently fail */ }
   }
 
-  const salvarCliente = () => {
-    if (clienteMode === 'criar') {
-      setClientes((prev) => [...prev, { ...clienteForm, id: Date.now() }])
-      resetClienteForm()
-      return
-    }
-
-    if (clienteMode === 'editar') {
-      setClientes((prev) => prev.map((item) => (item.id === clienteForm.id ? { ...clienteForm } : item)))
-      return
-    }
-
-    setClientes((prev) => prev.filter((item) => item.id !== clienteForm.id))
-    resetClienteForm()
+  const handleAdicionarConvidado = async (idReserva: number) => {
+    if (!novoConvidadoForm.nome.trim() || !novoConvidadoForm.telefone.trim()) return
+    const token = localStorage.getItem('alug_token') ?? ''
+    try {
+      const novo = await adicionarConvidadoApi(idReserva, novoConvidadoForm, token)
+      setConvidadosPorReserva((prev) => ({
+        ...prev,
+        [idReserva]: [...(prev[idReserva] ?? []), novo],
+      }))
+      setNovoConvidadoForm({ nome: '', telefone: '' })
+      setNovoConvidadoReservaId(null)
+    } catch { /* silently fail */ }
   }
 
-  const salvarEspaco = () => {
-    if (espacoMode === 'criar') {
-      setEspacos((prev) => [...prev, { ...espacoForm, id: Date.now() }])
-      resetEspacoForm()
-      return
+  const salvarCliente = async (): Promise<boolean> => {
+    if (!clienteMode) return false
+    const token = localStorage.getItem('alug_token') ?? ''
+    setOpError('')
+    try {
+      const payload = { nome: clienteForm.nome, email: clienteForm.email, cpf: clienteForm.cpf, telefone: clienteForm.telefone, endereco: null }
+      if (clienteMode === 'criar') {
+        const novo = await criarClienteApi(payload, token)
+        setClientesApi((prev) => [...prev, novo])
+      } else if (clienteMode === 'editar' && clienteForm.apiId != null) {
+        const upd = await atualizarClienteApi(clienteForm.apiId, payload, token)
+        setClientesApi((prev) => prev.map((c) => c.idCliente === clienteForm.apiId ? upd : c))
+      } else if (clienteMode === 'deletar' && clienteForm.apiId != null) {
+        await deletarClienteApi(clienteForm.apiId, token)
+        setClientesApi((prev) => prev.filter((c) => c.idCliente !== clienteForm.apiId))
+      }
+      return true
+    } catch (e) {
+      setOpError(e instanceof Error ? e.message : 'erro na operacao')
+      return false
     }
-
-    if (espacoMode === 'editar') {
-      setEspacos((prev) => prev.map((item) => (item.id === espacoForm.id ? { ...espacoForm } : item)))
-      return
-    }
-
-    setEspacos((prev) => prev.filter((item) => item.id !== espacoForm.id))
-    resetEspacoForm()
   }
 
-  const salvarReserva = () => {
-    if (reservaMode === 'criar') {
-      setReservas((prev) => [...prev, { ...reservaForm, id: Date.now() }])
-      resetReservaForm()
-      return
+  const salvarEspaco = async (): Promise<boolean> => {
+    if (!espacoMode) return false
+    const token = localStorage.getItem('alug_token') ?? ''
+    setOpError('')
+    const endereco = { cep: espacoForm.cep, logradouro: espacoForm.logradouro, numero: espacoForm.numero, bairro: espacoForm.bairro, cidade: espacoForm.cidade, estado: espacoForm.estado }
+    try {
+      if (espacoMode === 'criar') {
+        const novo = await criarEspacoApi({ capacidade: Number(espacoForm.capacidade), valor: Number(espacoForm.valor), endereco }, token)
+        setEspacosApi((prev) => [...prev, novo])
+      } else if (espacoMode === 'editar' && espacoForm.apiId != null) {
+        const upd = await atualizarEspacoApi(espacoForm.apiId, { capacidade: Number(espacoForm.capacidade), valor: Number(espacoForm.valor), endereco }, token)
+        setEspacosApi((prev) => prev.map((e) => e.idEspaco === espacoForm.apiId ? upd : e))
+      } else if (espacoMode === 'deletar' && espacoForm.apiId != null) {
+        await deletarEspacoApi(espacoForm.apiId, token)
+        setEspacosApi((prev) => prev.filter((e) => e.idEspaco !== espacoForm.apiId))
+      }
+      return true
+    } catch (e) {
+      setOpError(e instanceof Error ? e.message : 'erro na operacao')
+      return false
     }
+  }
 
-    if (reservaMode === 'editar') {
-      setReservas((prev) => prev.map((item) => (item.id === reservaForm.id ? { ...reservaForm } : item)))
-      return
+  const salvarReserva = async (): Promise<boolean> => {
+    if (!reservaMode) return false
+    const token = localStorage.getItem('alug_token') ?? ''
+    setOpError('')
+    const payload = {
+      dataEvento: reservaForm.dataEvento,
+      quantidadeConvidados: Number(reservaForm.quantidadeConvidados) || 1,
+      valorTotal: Number(reservaForm.valorTotal) || 0,
+      idCliente: Number(reservaForm.idCliente) || 1,
+      idGerente: Number(reservaForm.idGerente) || 1,
+      idEspaco: Number(reservaForm.idEspaco) || 1,
     }
-
-    setReservas((prev) => prev.filter((item) => item.id !== reservaForm.id))
-    resetReservaForm()
+    try {
+      if (reservaMode === 'criar') {
+        await criarReservaApi(payload, token)
+        listarReservas(token).then(setReservasApi).catch(() => {})
+      } else if (reservaMode === 'editar' && reservaForm.apiId != null) {
+        await atualizarReservaApi(reservaForm.apiId, payload, token)
+        listarReservas(token).then(setReservasApi).catch(() => {})
+      } else if (reservaMode === 'deletar' && reservaForm.apiId != null) {
+        await deletarReservaApi(reservaForm.apiId, token)
+        setReservasApi((prev) => prev.filter((r) => r.idReserva !== reservaForm.apiId))
+      }
+      return true
+    } catch (e) {
+      setOpError(e instanceof Error ? e.message : 'erro na operacao')
+      return false
+    }
   }
 
   const renderScreen = () => {
@@ -522,30 +554,45 @@ function App() {
               <div className="metrics">
                 <article>
                   <p>reservas hoje</p>
-                  <strong>{resumoDashboard.reservasHoje || 9}</strong>
+                  <strong>{reservasApi.length}</strong>
                 </article>
                 <article>
-                  <p>ocupacao media</p>
-                  <strong>{resumoDashboard.ocupacaoMedia || 87}%</strong>
+                  <p>espacos cadastrados</p>
+                  <strong>{espacosApi.length || 0}</strong>
                 </article>
                 <article>
-                  <p>tickets em aberto</p>
-                  <strong>{resumoDashboard.ticketsAbertos || 3}</strong>
+                  <p>reservas ativas</p>
+                  <strong>{reservasApi.filter(r => r.dataEvento >= new Date().toISOString().slice(0,10)).length}</strong>
                 </article>
               </div>
             </SectionCard>
             <SectionCard heading="espacos em destaque">
               <div className="card-grid">
-                {spaceCards.map((card) => (
-                  <article key={card.name} className="image-card">
-                    <img src={card.image} alt={card.name} />
-                    <div>
-                      <h4>{card.name}</h4>
-                      <p>{card.price}</p>
-                      <p>{card.capacity}</p>
-                    </div>
-                  </article>
-                ))}
+                {espacosApi.map((espaco, idx) => {
+                  const reserva = isReservado(espaco.idEspaco)
+                  return (
+                    <article key={espaco.idEspaco} className="image-card">
+                      <img src={SPACE_IMAGES[idx % SPACE_IMAGES.length]} alt={espaco.endereco?.logradouro} />
+                      <div>
+                        <h4>{espaco.endereco?.logradouro}</h4>
+                        <p>r$ {espaco.valor.toLocaleString('pt-BR')} / dia</p>
+                        <p>{espaco.capacidade} pessoas</p>
+                        {reserva ? (
+                          <span className="badge-reservado">reservado até {reserva.dataEvento}</span>
+                        ) : (
+                          <button
+                            className="primary-btn btn-reservar"
+                            onClick={() => { if (espaco.idEspaco > 0) setReservandoEspaco(espaco) }}
+                            disabled={espaco.idEspaco < 0}
+                          >
+                            reservar
+                          </button>
+                        )}
+                      </div>
+                    </article>
+                  )
+                })}
+                {espacosApi.length === 0 && <p className="empty-cell">nenhum espaco cadastrado</p>}
               </div>
             </SectionCard>
           </>
@@ -556,16 +603,17 @@ function App() {
           <>
             <SectionCard heading="espacos populares">
               <div className="card-grid">
-                {spaceCards.map((card) => (
-                  <article key={card.name} className="image-card">
-                    <img src={card.image} alt={card.name} />
+                {espacosApi.map((espaco, idx) => (
+                  <article key={espaco.idEspaco} className="image-card">
+                    <img src={SPACE_IMAGES[idx % SPACE_IMAGES.length]} alt={espaco.endereco?.logradouro} />
                     <div>
-                      <h4>{card.name}</h4>
-                      <p>{card.price}</p>
-                      <p>{card.capacity}</p>
+                      <h4>{espaco.endereco?.logradouro}</h4>
+                      <p>r$ {espaco.valor.toLocaleString('pt-BR')} / dia</p>
+                      <p>{espaco.capacidade} pessoas</p>
                     </div>
                   </article>
                 ))}
+                {espacosApi.length === 0 && <p className="empty-cell">nenhum espaco cadastrado</p>}
               </div>
             </SectionCard>
             <SectionCard heading="pesquisar espaco">
@@ -575,15 +623,15 @@ function App() {
               <div className="metrics">
                 <article>
                   <p>clientes base</p>
-                  <strong>{resumoDashboard.clientesBase || 24}</strong>
+                  <strong>{clientesApi.length}</strong>
                 </article>
                 <article>
                   <p>espacos base</p>
-                  <strong>{resumoDashboard.espacosBase || 8}</strong>
+                  <strong>{espacosApi.length}</strong>
                 </article>
                 <article>
                   <p>reservas base</p>
-                  <strong>{resumoDashboard.reservasBase || 17}</strong>
+                  <strong>{reservasApi.length}</strong>
                 </article>
               </div>
             </SectionCard>
@@ -595,19 +643,32 @@ function App() {
           <>
             <SectionCard heading="menu rapido">
               <div className="quick-actions">
-                {primaryActions.map((action) => (
-                  <button key={action} className="chip-btn">
-                    {action}
-                  </button>
-                ))}
+                <button
+                  className="chip-btn"
+                  onClick={() => { setClienteMode('criar'); setActiveScreen('gerencia-clientes') }}
+                >
+                  criar novo cliente
+                </button>
+                <button
+                  className="chip-btn"
+                  onClick={() => { setReservaMode('criar'); setActiveScreen('gerencia-reservas') }}
+                >
+                  fazer reserva
+                </button>
+                <button
+                  className="chip-btn"
+                  onClick={() => { setEspacoMode('criar'); setActiveScreen('gerencia-espacos') }}
+                >
+                  adicionar novo espaco
+                </button>
               </div>
             </SectionCard>
             <SectionCard heading="atalhos do sistema">
               <div className="tags">
-                <span>clientes</span>
-                <span>espacos</span>
-                <span>reservas</span>
-                <span>convidados</span>
+                <button className="tag-btn" onClick={() => setActiveScreen('gerencia-clientes')}>clientes</button>
+                <button className="tag-btn" onClick={() => setActiveScreen('gerencia-espacos')}>espacos</button>
+                <button className="tag-btn" onClick={() => setActiveScreen('gerencia-reservas')}>reservas</button>
+                <button className="tag-btn" onClick={() => setActiveScreen('lista-convidados')}>convidados</button>
               </div>
             </SectionCard>
           </>
@@ -619,181 +680,141 @@ function App() {
       case 'deletar-cliente':
         return (
           <>
-            <SectionCard heading="clientes em uma tela unica">
-              <div className="quick-actions">
-                <button
-                  className={clienteMode === 'criar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setClienteMode('criar')}
-                >
-                  criar
-                </button>
-                <button
-                  className={clienteMode === 'editar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setClienteMode('editar')}
-                >
-                  editar
-                </button>
-                <button
-                  className={clienteMode === 'deletar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setClienteMode('deletar')}
-                >
-                  deletar
-                </button>
-              </div>
-            </SectionCard>
+            {clienteMode !== null && (
+              <SectionCard
+                heading={
+                  clienteMode === 'criar' ? 'novo cliente' :
+                  clienteMode === 'editar' ? 'editar cliente' : 'excluir cliente'
+                }
+              >
+                {clienteMode === 'deletar' ? (
+                  <>
+                    <p className="confirm-text">
+                      Deseja excluir <strong>{clienteForm.nome}</strong>? Esta ação não pode ser desfeita.
+                    </p>
+                    <div className="action-row">
+                      <button className="ghost-btn" onClick={() => { setClienteMode(null); resetClienteForm(); setOpError('') }}>cancelar</button>
+                      <button className="danger-btn" onClick={async () => { if (await salvarCliente()) { setClienteMode(null); resetClienteForm(); setOpError('') } }}>
+                        sim, excluir
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid-two">
+                      <Field label="nome" placeholder="nome completo" value={clienteForm.nome} onChange={(v) => setClienteForm((p) => ({ ...p, nome: v }))} />
+                      <Field label="cpf" placeholder="000.000.000-00" value={clienteForm.cpf} onChange={(v) => setClienteForm((p) => ({ ...p, cpf: v }))} />
+                      <Field label="telefone" placeholder="(00) 00000-0000" value={clienteForm.telefone} onChange={(v) => setClienteForm((p) => ({ ...p, telefone: v }))} />
+                      <Field label="email" placeholder="cliente@email.com" value={clienteForm.email} onChange={(v) => setClienteForm((p) => ({ ...p, email: v }))} />
+                    </div>
+                    {opError && <p className="modal-error">{opError}</p>}
+                    <div className="action-row">
+                      <button className="ghost-btn" onClick={() => { setClienteMode(null); resetClienteForm(); setOpError('') }}>cancelar</button>
+                      <button className="primary-btn" onClick={async () => { if (await salvarCliente()) { setClienteMode(null); resetClienteForm(); setOpError('') } }}>
+                        {clienteMode === 'criar' ? 'inserir' : 'alterar'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </SectionCard>
+            )}
 
             <SectionCard heading="lista de clientes">
+              <div className="list-header">
+                <span className="list-count">{clientesApi.length} clientes cadastrados</span>
+                <button className="primary-btn btn-sm" onClick={() => { resetClienteForm(); setClienteMode('criar') }}>+ novo cliente</button>
+              </div>
               <table className="data-table">
                 <thead>
                   <tr>
+                    <th>#</th>
                     <th>nome</th>
-                    <th>cpf</th>
+                    <th>email</th>
                     <th>telefone</th>
-                    <th>acao</th>
+                    <th>acoes</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {clientes.map((item) => {
-                    const actionKey = `cliente-${item.id}`
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.nome}</td>
-                        <td>{item.cpf}</td>
-                        <td>{item.telefone}</td>
-                        <td>
-                          <div className="table-actions-wrap">
-                            <button
-                              className="icon-action"
-                              onClick={() => {
-                                setClienteMode('editar')
-                                setClienteForm(item)
-                              }}
-                            >
-                              <PencilIcon />
-                            </button>
-                            <button
-                              className="icon-action"
-                              onClick={() =>
-                                setOpenActionKey((prev) => (prev === actionKey ? null : actionKey))
-                              }
-                            >
-                              <DotsIcon />
-                            </button>
-                            {openActionKey === actionKey ? (
-                              <div className="row-menu">
-                                <button
-                                  onClick={() => {
-                                    setClienteMode('editar')
-                                    setClienteForm(item)
-                                    setOpenActionKey(null)
-                                  }}
-                                >
-                                  editar
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setClienteMode('deletar')
-                                    setClienteForm(item)
-                                    setOpenActionKey(null)
-                                  }}
-                                >
-                                  excluir
-                                </button>
-                              </div>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {clientesApi.map((item) => (
+                    <tr key={item.idCliente}>
+                      <td>{item.idCliente}</td>
+                      <td>{item.nome}</td>
+                      <td>{item.email}</td>
+                      <td>{item.telefone}</td>
+                      <td>
+                        <div className="row-actions">
+                          <button className="icon-action edit-action" title="editar" onClick={() => { setClienteMode('editar'); setClienteForm({ apiId: item.idCliente, nome: item.nome, cpf: '', telefone: item.telefone, email: item.email }) }}>
+                            <PencilIcon />
+                          </button>
+                          <button className="icon-action del-action" title="excluir" onClick={() => { setClienteMode('deletar'); setClienteForm({ apiId: item.idCliente, nome: item.nome, cpf: '', telefone: item.telefone, email: item.email }) }}>
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-            </SectionCard>
-
-            <SectionCard heading={clienteMode === 'deletar' ? 'deletar cliente' : 'formulario cliente'}>
-              {clienteMode === 'deletar' ? (
-                <div className="grid-one">
-                  <Field label="id ou nome" placeholder="cliente a excluir" />
-                  <Field label="confirmacao" placeholder="digite excluir para confirmar" />
-                </div>
-              ) : (
-                <div className="grid-two">
-                  <Field
-                    label="nome"
-                    placeholder="nome do cliente"
-                    value={clienteForm.nome}
-                    onChange={(value) => setClienteForm((prev) => ({ ...prev, nome: value }))}
-                  />
-                  <Field
-                    label="cpf"
-                    placeholder="000.000.000-00"
-                    value={clienteForm.cpf}
-                    onChange={(value) => setClienteForm((prev) => ({ ...prev, cpf: value }))}
-                  />
-                  <Field
-                    label="telefone"
-                    placeholder="(00) 00000-0000"
-                    value={clienteForm.telefone}
-                    onChange={(value) => setClienteForm((prev) => ({ ...prev, telefone: value }))}
-                  />
-                  <Field
-                    label="email"
-                    placeholder="cliente@email.com"
-                    value={clienteForm.email}
-                    onChange={(value) => setClienteForm((prev) => ({ ...prev, email: value }))}
-                  />
-                  <Field
-                    label="endereco"
-                    placeholder="rua, numero, bairro"
-                    value={clienteForm.endereco}
-                    onChange={(value) => setClienteForm((prev) => ({ ...prev, endereco: value }))}
-                  />
-                </div>
-              )}
-              <div className="action-row">
-                <button className="ghost-btn" onClick={resetClienteForm}>
-                  limpar
-                </button>
-                <button
-                  className={clienteMode === 'deletar' ? 'danger-btn' : 'primary-btn'}
-                  onClick={salvarCliente}
-                >
-                  {clienteMode === 'criar' ? 'inserir' : clienteMode === 'editar' ? 'alterar' : 'excluir'}
-                </button>
-              </div>
             </SectionCard>
           </>
         )
 
       case 'lista-convidados':
         return (
-          <SectionCard heading="lista de convidados">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>nome</th>
-                  <th>documento</th>
-                  <th>status</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td>ana monteiro</td>
-                  <td>***.***.***-18</td>
-                  <td>confirmado</td>
-                </tr>
-                <tr>
-                  <td>carlos neto</td>
-                  <td>***.***.***-22</td>
-                  <td>pendente</td>
-                </tr>
-                <tr>
-                  <td>joana ferraz</td>
-                  <td>***.***.***-45</td>
-                  <td>confirmado</td>
-                </tr>
-              </tbody>
-            </table>
+          <SectionCard heading="convidados por reserva">
+            {reservasApi.map((r) => {
+              const key = `conv-${r.idReserva}`
+              const isOpen = openActionKey === key
+              const convList = convidadosPorReserva[r.idReserva]
+              const showAdd = novoConvidadoReservaId === r.idReserva
+              return (
+                <div key={r.idReserva} className="reserva-accordion">
+                  <button
+                    className="accordion-header"
+                    onClick={() => {
+                      const next = isOpen ? null : key
+                      setOpenActionKey(next)
+                      if (next && !convList) carregarConvidados(r.idReserva)
+                    }}
+                  >
+                    <span>
+                      <strong>Reserva #{String(r.idReserva).padStart(3, '0')}</strong>
+                      <span className="acc-sub"> — {r.nomeCliente}</span>
+                      <span className="acc-date"> · {r.dataEvento}</span>
+                    </span>
+                    <span className={isOpen ? 'nav-chevron is-open' : 'nav-chevron'}>▾</span>
+                  </button>
+                  {isOpen && (
+                    <div className="accordion-body">
+                      <p className="acc-detail">Espaco: <strong>#{r.idEspaco}</strong> &nbsp; Convidados: <strong>{r.quantidadeConvidados}</strong> &nbsp; Valor: <strong>r$ {r.valorTotal?.toLocaleString('pt-BR')}</strong></p>
+                      <div className="conv-list">
+                        {(convList ?? []).length === 0 && <p className="empty-cell" style={{ fontSize: '0.8rem' }}>nenhum convidado cadastrado</p>}
+                        {(convList ?? []).map((c) => (
+                          <div key={c.idConvidado} className="conv-item">
+                            <span className="conv-nome">{c.nome}</span>
+                            <span className="conv-tel">{c.telefone}</span>
+                            <button className="icon-action del-action" title="remover" onClick={() => handleRemoverConvidado(r.idReserva, c.idConvidado)}>
+                              <TrashIcon />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      {showAdd ? (
+                        <div className="conv-add-form">
+                          <input className="conv-input" placeholder="nome" value={novoConvidadoForm.nome} onChange={(e) => setNovoConvidadoForm((p) => ({ ...p, nome: e.target.value }))} />
+                          <input className="conv-input" placeholder="telefone" value={novoConvidadoForm.telefone} onChange={(e) => setNovoConvidadoForm((p) => ({ ...p, telefone: e.target.value }))} />
+                          <button className="primary-btn btn-sm" onClick={() => handleAdicionarConvidado(r.idReserva)}>adicionar</button>
+                          <button className="ghost-btn btn-sm" onClick={() => { setNovoConvidadoReservaId(null); setNovoConvidadoForm({ nome: '', telefone: '' }) }}>cancelar</button>
+                        </div>
+                      ) : (
+                        <button className="ghost-btn btn-sm" style={{ marginTop: '8px' }} onClick={() => setNovoConvidadoReservaId(r.idReserva)}>+ convidado</button>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+            {reservasApi.length === 0 && <p className="empty-cell">nenhuma reserva cadastrada</p>}
           </SectionCard>
         )
 
@@ -803,142 +824,89 @@ function App() {
       case 'deletar-espaco':
         return (
           <>
-            <SectionCard heading="espacos em uma tela unica">
-              <div className="quick-actions">
-                <button
-                  className={espacoMode === 'criar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setEspacoMode('criar')}
-                >
-                  criar
-                </button>
-                <button
-                  className={espacoMode === 'editar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setEspacoMode('editar')}
-                >
-                  editar
-                </button>
-                <button
-                  className={espacoMode === 'deletar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setEspacoMode('deletar')}
-                >
-                  deletar
-                </button>
-              </div>
-            </SectionCard>
+            {espacoMode !== null && (
+              <SectionCard
+                heading={
+                  espacoMode === 'criar' ? 'novo espaco' :
+                  espacoMode === 'editar' ? 'editar espaco' : 'excluir espaco'
+                }
+              >
+                {espacoMode === 'deletar' ? (
+                  <>
+                    <p className="confirm-text">
+                      Deseja excluir <strong>{espacoForm.nome}</strong>? Esta ação não pode ser desfeita.
+                    </p>
+                    <div className="action-row">
+                      <button className="ghost-btn" onClick={() => { setEspacoMode(null); resetEspacoForm(); setOpError('') }}>cancelar</button>
+                      <button className="danger-btn" onClick={async () => { if (await salvarEspaco()) { setEspacoMode(null); resetEspacoForm(); setOpError('') } }}>sim, excluir</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid-two">
+                      <Field label="capacidade" placeholder="numero de pessoas" value={espacoForm.capacidade} onChange={(v) => setEspacoForm((p) => ({ ...p, capacidade: v }))} />
+                      <Field label="valor (r$)" placeholder="1280" value={espacoForm.valor} onChange={(v) => setEspacoForm((p) => ({ ...p, valor: v }))} />
+                      <Field label="cep" placeholder="37200000" value={espacoForm.cep} onChange={(v) => setEspacoForm((p) => ({ ...p, cep: v }))} />
+                      <Field label="logradouro" placeholder="Av. Central" value={espacoForm.logradouro} onChange={(v) => setEspacoForm((p) => ({ ...p, logradouro: v }))} />
+                      <Field label="numero" placeholder="100" value={espacoForm.numero} onChange={(v) => setEspacoForm((p) => ({ ...p, numero: v }))} />
+                      <Field label="bairro" placeholder="Centro" value={espacoForm.bairro} onChange={(v) => setEspacoForm((p) => ({ ...p, bairro: v }))} />
+                      <Field label="cidade" placeholder="Lavras" value={espacoForm.cidade} onChange={(v) => setEspacoForm((p) => ({ ...p, cidade: v }))} />
+                      <Field label="estado" placeholder="MG" value={espacoForm.estado} onChange={(v) => setEspacoForm((p) => ({ ...p, estado: v }))} />
+                    </div>
+                    {opError && <p className="modal-error">{opError}</p>}
+                    <div className="action-row">
+                      <button className="ghost-btn" onClick={() => { setEspacoMode(null); resetEspacoForm(); setOpError('') }}>cancelar</button>
+                      <button className="primary-btn" onClick={async () => { if (await salvarEspaco()) { setEspacoMode(null); resetEspacoForm(); setOpError('') } }}>
+                        {espacoMode === 'criar' ? 'inserir' : 'alterar'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </SectionCard>
+            )}
 
             <SectionCard heading="lista de espacos">
+              <div className="list-header">
+                <span className="list-count">{espacosApi.length} espacos cadastrados</span>
+                <button className="primary-btn btn-sm" onClick={() => { resetEspacoForm(); setEspacoMode('criar') }}>+ novo espaco</button>
+              </div>
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>espaco</th>
+                    <th>#</th>
+                    <th>endereco</th>
                     <th>capacidade</th>
                     <th>valor</th>
-                    <th>acao</th>
+                    <th>acoes</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {espacos.map((item) => {
-                    const actionKey = `espaco-${item.id}`
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.nome}</td>
-                        <td>{item.capacidade}</td>
-                        <td>{`r$ ${item.valor},00`}</td>
-                        <td>
-                          <div className="table-actions-wrap">
-                            <button
-                              className="icon-action"
-                              onClick={() => {
-                                setEspacoMode('editar')
-                                setEspacoForm(item)
-                              }}
-                            >
-                              <PencilIcon />
-                            </button>
-                            <button
-                              className="icon-action"
-                              onClick={() =>
-                                setOpenActionKey((prev) => (prev === actionKey ? null : actionKey))
-                              }
-                            >
-                              <DotsIcon />
-                            </button>
-                            {openActionKey === actionKey ? (
-                              <div className="row-menu">
-                                <button
-                                  onClick={() => {
-                                    setEspacoMode('editar')
-                                    setEspacoForm(item)
-                                    setOpenActionKey(null)
-                                  }}
-                                >
-                                  editar
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setEspacoMode('deletar')
-                                    setEspacoForm(item)
-                                    setOpenActionKey(null)
-                                  }}
-                                >
-                                  excluir
-                                </button>
-                              </div>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {espacosApi.map((item) => (
+                    <tr key={item.idEspaco}>
+                      <td>{item.idEspaco}</td>
+                      <td>{item.endereco?.logradouro}, {item.endereco?.cidade}</td>
+                      <td>{item.capacidade} pessoas</td>
+                      <td>r$ {item.valor.toLocaleString('pt-BR')}</td>
+                      <td>
+                        <div className="row-actions">
+                          <button className="icon-action edit-action" title="editar" onClick={() => {
+                            setEspacoMode('editar')
+                            setEspacoForm({ apiId: item.idEspaco, capacidade: String(item.capacidade), valor: String(item.valor), cep: item.endereco?.cep || '', logradouro: item.endereco?.logradouro || '', numero: item.endereco?.numero || '', bairro: item.endereco?.bairro || '', cidade: item.endereco?.cidade || '', estado: item.endereco?.estado || 'MG' })
+                          }}>
+                            <PencilIcon />
+                          </button>
+                          <button className="icon-action del-action" title="excluir" onClick={() => {
+                            setEspacoMode('deletar')
+                            setEspacoForm({ apiId: item.idEspaco, capacidade: String(item.capacidade), valor: String(item.valor), cep: '', logradouro: item.endereco?.logradouro || '', numero: '', bairro: '', cidade: '', estado: 'MG' })
+                          }}>
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-            </SectionCard>
-
-            <SectionCard heading={espacoMode === 'deletar' ? 'deletar espaco' : 'formulario espaco'}>
-              {espacoMode === 'deletar' ? (
-                <div className="grid-one">
-                  <Field label="id ou nome" placeholder="espaco a excluir" />
-                  <Field label="confirmacao" placeholder="digite excluir para confirmar" />
-                </div>
-              ) : (
-                <div className="grid-two">
-                  <Field
-                    label="nome"
-                    placeholder="nome do espaco"
-                    value={espacoForm.nome}
-                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, nome: value }))}
-                  />
-                  <Field
-                    label="endereco"
-                    placeholder="rua, numero, bairro"
-                    value={espacoForm.endereco}
-                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, endereco: value }))}
-                  />
-                  <Field
-                    label="capacidade"
-                    placeholder="numero de pessoas"
-                    value={espacoForm.capacidade}
-                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, capacidade: value }))}
-                  />
-                  <Field
-                    label="valor"
-                    placeholder="r$ 0,00"
-                    value={espacoForm.valor}
-                    onChange={(value) => setEspacoForm((prev) => ({ ...prev, valor: value }))}
-                  />
-                </div>
-              )}
-              <div className="action-row">
-                <button className="ghost-btn" onClick={resetEspacoForm}>
-                  limpar
-                </button>
-                <button
-                  className={espacoMode === 'deletar' ? 'danger-btn' : 'primary-btn'}
-                  onClick={salvarEspaco}
-                >
-                  {espacoMode === 'criar' ? 'inserir' : espacoMode === 'editar' ? 'alterar' : 'excluir'}
-                </button>
-              </div>
             </SectionCard>
           </>
         )
@@ -949,195 +917,179 @@ function App() {
       case 'deletar-reserva':
         return (
           <>
-            <SectionCard heading="reservas em uma tela unica">
-              <div className="quick-actions">
-                <button
-                  className={reservaMode === 'criar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setReservaMode('criar')}
-                >
-                  criar
-                </button>
-                <button
-                  className={reservaMode === 'editar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setReservaMode('editar')}
-                >
-                  editar
-                </button>
-                <button
-                  className={reservaMode === 'deletar' ? 'chip-btn is-selected' : 'chip-btn'}
-                  onClick={() => setReservaMode('deletar')}
-                >
-                  deletar
-                </button>
-              </div>
-            </SectionCard>
+            {reservaMode !== null && (
+              <SectionCard
+                heading={
+                  reservaMode === 'criar' ? 'nova reserva' :
+                  reservaMode === 'editar' ? 'editar reserva' : 'excluir reserva'
+                }
+              >
+                {reservaMode === 'deletar' ? (
+                  <>
+                    <p className="confirm-text">
+                      Deseja excluir a reserva de <strong>{reservaForm.idCliente}</strong> para {reservaForm.dataEvento}?
+                    </p>
+                    <div className="action-row">
+                      <button className="ghost-btn" onClick={() => { setReservaMode(null); resetReservaForm(); setOpError('') }}>cancelar</button>
+                      <button className="danger-btn" onClick={async () => { if (await salvarReserva()) { setReservaMode(null); resetReservaForm(); setOpError('') } }}>sim, excluir</button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <div className="grid-two">
+                      <label className="field">
+                        <span>cliente</span>
+                        <select value={reservaForm.idCliente} onChange={(e) => setReservaForm((p) => ({ ...p, idCliente: e.target.value }))}>
+                          <option value="">selecione um cliente</option>
+                          {clientesApi.map((c) => <option key={c.idCliente} value={c.idCliente}>{c.nome}</option>)}
+                        </select>
+                      </label>
+                      <label className="field">
+                        <span>espaco</span>
+                        <select value={reservaForm.idEspaco} onChange={(e) => setReservaForm((p) => ({ ...p, idEspaco: e.target.value }))}>
+                          <option value="">selecione um espaco</option>
+                          {espacosApi.map((e) => <option key={e.idEspaco} value={e.idEspaco}>{e.endereco?.logradouro} — r$ {e.valor.toLocaleString('pt-BR')}</option>)}
+                        </select>
+                      </label>
+                      <Field label="data do evento" placeholder="aaaa-mm-dd" type="date" value={reservaForm.dataEvento} onChange={(v) => setReservaForm((p) => ({ ...p, dataEvento: v }))} />
+                      <Field label="qtd convidados" placeholder="20" value={reservaForm.quantidadeConvidados} onChange={(v) => setReservaForm((p) => ({ ...p, quantidadeConvidados: v }))} />
+                      <Field label="valor total (r$)" placeholder="1280" value={reservaForm.valorTotal} onChange={(v) => setReservaForm((p) => ({ ...p, valorTotal: v }))} />
+                      <Field label="id do gerente" placeholder="1" value={reservaForm.idGerente} onChange={(v) => setReservaForm((p) => ({ ...p, idGerente: v }))} />
+                    </div>
+                    {opError && <p className="modal-error">{opError}</p>}
+                    <div className="action-row">
+                      <button className="ghost-btn" onClick={() => { setReservaMode(null); resetReservaForm(); setOpError('') }}>cancelar</button>
+                      <button className="primary-btn" onClick={async () => { if (await salvarReserva()) { setReservaMode(null); resetReservaForm(); setOpError('') } }}>
+                        {reservaMode === 'criar' ? 'inserir' : 'alterar'}
+                      </button>
+                    </div>
+                  </>
+                )}
+              </SectionCard>
+            )}
 
             <SectionCard heading="lista de reservas">
+              <div className="list-header">
+                <span className="list-count">{reservasApi.length} reservas cadastradas</span>
+                <button className="primary-btn btn-sm" onClick={() => { resetReservaForm(); setReservaMode('criar') }}>+ nova reserva</button>
+              </div>
               <table className="data-table">
                 <thead>
                   <tr>
-                    <th>id</th>
+                    <th>#</th>
                     <th>cliente</th>
+                    <th>espaco</th>
                     <th>data</th>
-                    <th>acao</th>
+                    <th>convidados</th>
+                    <th>valor</th>
+                    <th>acoes</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {reservas.map((item) => {
-                    const actionKey = `reserva-${item.id}`
-                    return (
-                      <tr key={item.id}>
-                        <td>{item.id.toString().padStart(3, '0')}</td>
-                        <td>{item.cliente}</td>
-                        <td>{item.data}</td>
-                        <td>
-                          <div className="table-actions-wrap">
-                            <button
-                              className="icon-action"
-                              onClick={() => {
-                                setReservaMode('editar')
-                                setReservaForm(item)
-                              }}
-                            >
-                              <PencilIcon />
-                            </button>
-                            <button
-                              className="icon-action"
-                              onClick={() =>
-                                setOpenActionKey((prev) => (prev === actionKey ? null : actionKey))
-                              }
-                            >
-                              <DotsIcon />
-                            </button>
-                            {openActionKey === actionKey ? (
-                              <div className="row-menu">
-                                <button
-                                  onClick={() => {
-                                    setReservaMode('editar')
-                                    setReservaForm(item)
-                                    setOpenActionKey(null)
-                                  }}
-                                >
-                                  editar
-                                </button>
-                                <button
-                                  onClick={() => {
-                                    setReservaMode('deletar')
-                                    setReservaForm(item)
-                                    setOpenActionKey(null)
-                                  }}
-                                >
-                                  excluir
-                                </button>
-                              </div>
-                            ) : null}
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
+                  {reservasApi.map((item) => (
+                    <tr key={item.idReserva}>
+                      <td>{String(item.idReserva).padStart(3, '0')}</td>
+                      <td>{item.nomeCliente}</td>
+                      <td>#{item.idEspaco}</td>
+                      <td>{item.dataEvento}</td>
+                      <td>{item.quantidadeConvidados}</td>
+                      <td>r$ {item.valorTotal?.toLocaleString('pt-BR')}</td>
+                      <td>
+                        <div className="row-actions">
+                          <button className="icon-action edit-action" title="editar" onClick={() => {
+                            setReservaMode('editar')
+                            setReservaForm({ apiId: item.idReserva, dataEvento: item.dataEvento, quantidadeConvidados: String(item.quantidadeConvidados), valorTotal: String(item.valorTotal), idCliente: String(item.idCliente), idGerente: String(item.idGerente), idEspaco: String(item.idEspaco) })
+                          }}>
+                            <PencilIcon />
+                          </button>
+                          <button className="icon-action del-action" title="excluir" onClick={() => {
+                            setReservaMode('deletar')
+                            setReservaForm({ apiId: item.idReserva, dataEvento: item.dataEvento, quantidadeConvidados: String(item.quantidadeConvidados), valorTotal: String(item.valorTotal), idCliente: String(item.idCliente), idGerente: String(item.idGerente), idEspaco: String(item.idEspaco) })
+                          }}>
+                            <TrashIcon />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
                 </tbody>
               </table>
-            </SectionCard>
-
-            <SectionCard heading={reservaMode === 'deletar' ? 'deletar reserva' : 'formulario reserva'}>
-              {reservaMode === 'deletar' ? (
-                <div className="grid-one">
-                  <Field label="reserva a excluir" placeholder="id da reserva" />
-                  <Field label="confirmacao" placeholder="digite excluir para confirmar" />
-                </div>
-              ) : (
-                <div className="grid-two">
-                  <Field
-                    label="cliente"
-                    placeholder="nome do cliente"
-                    value={reservaForm.cliente}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, cliente: value }))}
-                  />
-                  <Field
-                    label="id do cliente"
-                    placeholder="id cliente"
-                    value={reservaForm.clienteId}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, clienteId: value }))}
-                  />
-                  <Field
-                    label="id do gerente"
-                    placeholder="id gerente"
-                    value={reservaForm.gerenteId}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, gerenteId: value }))}
-                  />
-                  <Field
-                    label="id do espaco"
-                    placeholder="id espaco"
-                    value={reservaForm.espacoId}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, espacoId: value }))}
-                  />
-                  <Field
-                    label="data"
-                    placeholder="dd/mm/aaaa"
-                    value={reservaForm.data}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, data: value }))}
-                  />
-                  <Field
-                    label="lista de convidados"
-                    placeholder="nome1, nome2"
-                    value={reservaForm.convidados}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, convidados: value }))}
-                  />
-                  <Field
-                    label="servicos opcionais"
-                    placeholder="buffet, fotografos"
-                    value={reservaForm.servicos}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, servicos: value }))}
-                  />
-                  <Field
-                    label="valor"
-                    placeholder="r$ 0,00"
-                    value={reservaForm.valor}
-                    onChange={(value) => setReservaForm((prev) => ({ ...prev, valor: value }))}
-                  />
-                </div>
-              )}
-              <div className="action-row">
-                <button className="ghost-btn" onClick={resetReservaForm}>
-                  limpar
-                </button>
-                <button
-                  className={reservaMode === 'deletar' ? 'danger-btn' : 'primary-btn'}
-                  onClick={salvarReserva}
-                >
-                  {reservaMode === 'criar' ? 'inserir' : reservaMode === 'editar' ? 'alterar' : 'excluir'}
-                </button>
-              </div>
             </SectionCard>
           </>
         )
 
-      case 'pagamento':
+      case 'pagamento': {
+        const totalArrecadado = reservasApi.reduce((acc, r) => acc + (r.valorTotal || 0), 0)
+        const ticketMedio = reservasApi.length > 0 ? Math.round(totalArrecadado / reservasApi.length) : 0
         return (
-          <SectionCard heading="metodo de pagamento">
-            <div className="grid-two">
-              <div className="quick-actions">
-                <button className="chip-btn">cartao de debito</button>
-                <button className="chip-btn">cartao de credito</button>
-                <button className="chip-btn">pix</button>
+          <>
+            <SectionCard heading="resumo financeiro">
+              <div className="metrics">
+                <article>
+                  <p>total arrecadado</p>
+                  <strong>r$ {totalArrecadado.toLocaleString('pt-BR')}</strong>
+                </article>
+                <article>
+                  <p>reservas registradas</p>
+                  <strong>{reservasApi.length}</strong>
+                </article>
+                <article>
+                  <p>ticket medio</p>
+                  <strong>r$ {ticketMedio.toLocaleString('pt-BR')}</strong>
+                </article>
               </div>
-              <div className="payment-info">
-                <h4>dados</h4>
-                <p>titular: nome do cliente</p>
-                <p>cpf: 000.000.000-00</p>
-                <p>conta: banco alug</p>
-                <p>agencia: 0001</p>
-                <p>conta corrente: 12345-6</p>
-                <p>chave pix: contato@alug.com</p>
+            </SectionCard>
+
+            <SectionCard heading="metodo de pagamento">
+              <div className="payment-methods">
+                {(['pix', 'credito', 'debito', 'boleto'] as const).map((m) => (
+                  <button
+                    key={m}
+                    className={payMethod === m ? 'pay-card is-selected' : 'pay-card'}
+                    onClick={() => setPayMethod(m)}
+                  >
+                    <span className="pay-icon">
+                      {m === 'pix' ? '⚡' : m === 'credito' ? '💳' : m === 'debito' ? '🏦' : '📄'}
+                    </span>
+                    <span className="pay-label">
+                      {m === 'credito' ? 'crédito' : m === 'debito' ? 'débito' : m}
+                    </span>
+                    <small>
+                      {m === 'pix' ? 'instantâneo' : m === 'credito' ? 'até 12x' : m === 'debito' ? 'à vista' : '3 dias úteis'}
+                    </small>
+                  </button>
+                ))}
               </div>
-            </div>
-            <div className="action-row">
-              <button className="ghost-btn">cancelar</button>
-              <button className="primary-btn">registrar pagamento</button>
-            </div>
-          </SectionCard>
+              {payMethod === 'pix' && (
+                <div className="pix-info">
+                  <p>Chave Pix: <strong>contato@alug.com</strong></p>
+                  <p>Banco: <strong>Alug Financeiro</strong></p>
+                  <p>Nome: <strong>Alug Sistema LTDA</strong></p>
+                </div>
+              )}
+              {(payMethod === 'credito' || payMethod === 'debito') && (
+                <div className="grid-two" style={{ marginTop: '16px' }}>
+                  <Field label="numero do cartao" placeholder="0000 0000 0000 0000" />
+                  <Field label="titular" placeholder="como impresso no cartao" />
+                  <Field label="validade" placeholder="MM/AA" />
+                  <Field label="cvv" placeholder="000" />
+                </div>
+              )}
+            </SectionCard>
+
+            <SectionCard heading="registrar pagamento">
+              <div className="grid-two">
+                <Field label="id da reserva" placeholder="ex: 001" />
+                <Field label="valor (r$)" placeholder="0,00" />
+              </div>
+              <div className="action-row">
+                <button className="ghost-btn">cancelar</button>
+                <button className="primary-btn" disabled={!payMethod}>registrar pagamento</button>
+              </div>
+            </SectionCard>
+          </>
         )
+      }
 
       default:
         return null
@@ -1171,9 +1123,13 @@ function App() {
                 onChange={setLoginSenha}
               />
             </div>
-            <p className="login-error">modo demonstracao ativo</p>
-            <button className="primary-btn login-submit" onClick={handleLogin}>
-              entrar
+            <p className="login-error">{loginError || 'use as credenciais do backend para entrar'}</p>
+            <button
+              className="primary-btn login-submit"
+              onClick={handleLogin}
+              disabled={isLoadingLogin}
+            >
+              {isLoadingLogin ? 'entrando...' : 'entrar'}
             </button>
           </div>
           <small className="login-footer">desenvolvido por equipe alug</small>
@@ -1253,6 +1209,50 @@ function App() {
           <div className="content-body">{renderScreen()}</div>
         </section>
       </main>
+
+      {reservandoEspaco && (
+        <div className="modal-overlay" onClick={() => { setReservandoEspaco(null); setQuickStatus('idle'); setQuickErro('') }}>
+          <div className="modal-box" onClick={(e) => e.stopPropagation()}>
+            <h3>reservar espaco</h3>
+            <p className="modal-info">
+              <strong>{reservandoEspaco.endereco?.logradouro}</strong> &mdash; {reservandoEspaco.capacidade} pessoas &mdash; r$ {reservandoEspaco.valor.toLocaleString('pt-BR')}/dia
+            </p>
+            <div className="grid-two">
+              <Field
+                label="data do evento"
+                placeholder="aaaa-mm-dd"
+                type="date"
+                value={quickForm.dataEvento}
+                onChange={(v) => setQuickForm((p) => ({ ...p, dataEvento: v }))}
+              />
+              <Field
+                label="id do cliente"
+                placeholder="ex: 1"
+                value={quickForm.idCliente}
+                onChange={(v) => setQuickForm((p) => ({ ...p, idCliente: v }))}
+              />
+              <Field
+                label="quantidade de convidados"
+                placeholder="ex: 20"
+                value={quickForm.quantidadeConvidados}
+                onChange={(v) => setQuickForm((p) => ({ ...p, quantidadeConvidados: v }))}
+              />
+            </div>
+            {quickStatus === 'ok' && <p className="modal-success">reserva criada com sucesso!</p>}
+            {quickStatus === 'error' && <p className="modal-error">{quickErro}</p>}
+            <div className="action-row">
+              <button className="ghost-btn" onClick={() => { setReservandoEspaco(null); setQuickStatus('idle'); setQuickErro('') }}>cancelar</button>
+              <button
+                className="primary-btn"
+                onClick={handleQuickReserva}
+                disabled={quickStatus === 'loading' || quickStatus === 'ok' || !quickForm.dataEvento}
+              >
+                {quickStatus === 'loading' ? 'reservando...' : 'confirmar reserva'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

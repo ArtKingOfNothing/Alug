@@ -459,7 +459,8 @@
 }
 
 .chip-btn,
-.tags span {
+.tags span,
+.tag-btn {
   background: #eef3fb;
   border: 1px solid #ced8ea;
   color: #31517d;
@@ -467,10 +468,85 @@
   padding: 8px 12px;
 }
 
+.tag-btn {
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+}
+
+.tag-btn:hover {
+  background: #d9e5f7;
+}
+
 .chip-btn.is-selected {
   background: #2d4179;
   border-color: #2d4179;
   color: #ffffff;
+}
+
+.badge-reservado {
+  display: inline-block;
+  margin-top: 8px;
+  background: #fff3cd;
+  border: 1px solid #f0c040;
+  color: #7a5c00;
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.78rem;
+}
+
+.btn-reservar {
+  margin-top: 8px;
+  width: 100%;
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 20, 50, 0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal-box {
+  background: #fff;
+  border-radius: 14px;
+  padding: 28px 32px;
+  width: min(520px, 92vw);
+  box-shadow: 0 24px 60px rgba(10, 20, 60, 0.22);
+}
+
+.modal-box h3 {
+  margin: 0 0 8px;
+  color: #24446f;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.modal-info {
+  color: #56739a;
+  font-size: 0.9rem;
+  margin: 0 0 16px;
+}
+
+.modal-success {
+  color: #1a7a3a;
+  background: #e6f9ed;
+  border: 1px solid #a3e0b5;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+
+.modal-error {
+  color: #a0190e;
+  background: #fef0ee;
+  border: 1px solid #f5b8b3;
+  border-radius: 8px;
+  padding: 8px 12px;
+  margin: 8px 0;
 }
 
 .table-action {
@@ -623,3 +699,262 @@
     flex-direction: column;
   }
 }
+
+/* ── list-header ───────────────────────────────────── */
+.list-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.list-count {
+  color: #667fa8;
+  font-size: 0.85rem;
+}
+
+.btn-sm {
+  padding: 6px 14px;
+  font-size: 0.85rem;
+}
+
+/* ── inline row actions ────────────────────────────── */
+.row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.edit-action:hover svg {
+  fill: #2d5fbd;
+}
+
+.del-action:hover svg {
+  fill: #c92b2b;
+}
+
+/* ── confirm text ──────────────────────────────────── */
+.confirm-text {
+  background: #fff8e6;
+  border: 1px solid #f5d278;
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #7a5500;
+  margin-bottom: 16px;
+}
+
+/* ── accordion (lista convidados) ──────────────────── */
+.reserva-accordion {
+  border: 1px solid #d6e0f0;
+  border-radius: 10px;
+  margin-bottom: 10px;
+  overflow: hidden;
+}
+
+.accordion-header {
+  width: 100%;
+  background: #f5f8fe;
+  border: 0;
+  padding: 12px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: #24406c;
+  text-align: left;
+}
+
+.accordion-header:hover {
+  background: #eaf0fc;
+}
+
+.acc-sub {
+  font-weight: 400;
+  color: #5172a0;
+}
+
+.acc-date {
+  color: #8ea5c8;
+  font-size: 0.82rem;
+}
+
+.accordion-body {
+  padding: 0 12px 12px;
+  background: #fff;
+}
+
+.acc-detail {
+  margin: 10px 0 0;
+  color: #4a6690;
+  font-size: 0.88rem;
+  line-height: 1.6;
+}
+
+/* ── convidados list ───────────────────────────────── */
+.conv-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.conv-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 6px 10px;
+  background: #f7f9fc;
+  border-radius: 6px;
+  font-size: 0.85rem;
+}
+
+.conv-nome {
+  flex: 1;
+  font-weight: 500;
+  color: #1e3a5f;
+}
+
+.conv-tel {
+  color: #5a7da0;
+  font-size: 0.8rem;
+}
+
+.conv-add-form {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.conv-input {
+  border: 1px solid #c8d8ea;
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-size: 0.85rem;
+  color: #1e3a5f;
+  background: #fff;
+  flex: 1;
+  min-width: 120px;
+}
+
+.conv-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+}
+
+/* ── select inside field ───────────────────────────── */
+.field select {
+  width: 100%;
+  border: 1px solid #c8d8ea;
+  border-radius: 6px;
+  padding: 8px 12px;
+  font-size: 0.9rem;
+  color: #1e3a5f;
+  background: #fff;
+  appearance: auto;
+}
+
+.field select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+}
+
+.empty-cell {
+  text-align: center;
+  color: #9baec8;
+  font-size: 0.88rem;
+  padding: 16px !important;
+}
+
+/* ── status chip ───────────────────────────────────── */
+.status-chip {
+  border-radius: 999px;
+  padding: 3px 10px;
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.status-chip.confirmado {
+  background: #e6f9ed;
+  color: #1a6e35;
+  border: 1px solid #9fd9b3;
+}
+
+.status-chip.pendente {
+  background: #fff8e0;
+  color: #7a5200;
+  border: 1px solid #f0d080;
+}
+
+/* ── payment cards ─────────────────────────────────── */
+.payment-methods {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.pay-card {
+  border: 2px solid #d0dbed;
+  border-radius: 12px;
+  background: #f8fafe;
+  padding: 18px 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s, box-shadow 0.15s;
+  font-family: inherit;
+}
+
+.pay-card:hover {
+  border-color: #6b96d4;
+  background: #eef4ff;
+}
+
+.pay-card.is-selected {
+  border-color: #2d5fbd;
+  background: #e8effd;
+  box-shadow: 0 0 0 3px rgba(45, 95, 189, 0.15);
+}
+
+.pay-icon {
+  font-size: 1.7rem;
+  line-height: 1;
+}
+
+.pay-label {
+  font-weight: 600;
+  color: #24406c;
+  text-transform: capitalize;
+}
+
+.pay-card small {
+  color: #7a95bb;
+  font-size: 0.75rem;
+}
+
+.pix-info {
+  background: #f0faf4;
+  border: 1px solid #a8dfc0;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-top: 4px;
+}
+
+.pix-info p {
+  margin: 4px 0;
+  color: #1e5c36;
+  font-size: 0.9rem;
+}
+
+@media (max-width: 700px) {
+  .payment-methods {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+

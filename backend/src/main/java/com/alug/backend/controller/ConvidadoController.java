@@ -57,4 +57,20 @@ public class ConvidadoController {
         convidadoService.removerConvidado(idConvidado);
         return ResponseEntity.noContent().build();
     }
+
+    // Atualizar dados de um convidado
+    @PutMapping("/{idConvidado}")
+    @PreAuthorize("hasRole('SUPER_ADMIN') or hasRole('GERENTE_COMUM')")
+    public ResponseEntity<ConvidadoResponseDTO> atualizarConvidado(
+            @PathVariable Integer idReserva,
+            @PathVariable Integer idConvidado,
+            @Valid @RequestBody ConvidadoRequestDTO dados) {
+
+        Convidado novosDados = new Convidado();
+        novosDados.setNome(dados.nome());
+        novosDados.setTelefone(dados.telefone());
+
+        Convidado atualizado = convidadoService.atualizarConvidado(idConvidado, novosDados);
+        return ResponseEntity.ok(new ConvidadoResponseDTO(atualizado));
+    }
 }

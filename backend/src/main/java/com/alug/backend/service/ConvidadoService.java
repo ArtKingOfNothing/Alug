@@ -40,4 +40,12 @@ public class ConvidadoService {
         }
         convidadoRepository.deleteById(idConvidado);
     }
+
+    public Convidado atualizarConvidado(Integer idConvidado, Convidado dadosNovos) {
+        Convidado convidado = convidadoRepository.findById(idConvidado)
+                .orElseThrow(() -> new IllegalArgumentException("Convidado não encontrado"));
+        convidado.setNome(dadosNovos.getNome());
+        convidado.setTelefone(dadosNovos.getTelefone());
+        return convidadoRepository.save(convidado);
+    }
 }

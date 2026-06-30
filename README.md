@@ -4,14 +4,13 @@ Projeto acadêmico de um sistema para gestão de locações.
 
 ## Status do Projeto
 
-Atualmente este repositório contém somente as entregas das Sprints 0 e 1:
+Atualmente este repositório contém:
 
-- levantamento e análise de requisitos
-- casos de uso e modelagem inicial
-- padrões adotados para verificação e análise
-- prototipação e planejamento técnico
+- backend Spring Boot com autenticação JWT e CRUDs principais
+- frontend React + Vite
+- documentação de requisitos e modelagem
 
-Não há implementação funcional (frontend/backend) nesta versão do repositório.
+Há implementação funcional (frontend/backend) nesta versão do repositório.
 
 ## 1. CONTEXTO DO PROBLEMA E SOLUÇÃO
 
@@ -37,7 +36,7 @@ Quando implementado, o sistema deverá permitir o cadastro de clientes e itens, 
 
 ## 2. INSTRUÇÕES PARA USO
 
-Como o projeto ainda está em fase de prototipação (Sprints 0 e 1), o uso atual é documental.
+O projeto pode ser executado localmente com backend, frontend e banco MySQL.
 
 ### 2.1 Como baixar o projeto
 
@@ -62,12 +61,25 @@ Opção 2 (ZIP):
 
 ### 2.3 Instalar e rodar a aplicação
 
-No estado atual (Sprints 0 e 1), ainda não existe aplicação executável.
-
-Assim que o código for publicado nas próximas sprints, o fluxo esperado para qualquer colega subir na máquina será:
+Fluxo para subir o banco local:
 
 ```bash
 docker compose up --build -d
+```
+
+Backend:
+
+```bash
+cd backend
+mvnw.cmd spring-boot:run
+```
+
+Frontend:
+
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
 E o acesso previsto no navegador será:
@@ -96,9 +108,7 @@ Você também pode baixar o ZIP no GitHub (Code > Download ZIP), extrair e abrir
 
 ### 3.2 Execute o comando para instalar bibliotecas e outras dependências
 
-No estado atual, ainda não há módulos de frontend/backend para instalar dependências.
-
-Comandos planejados para a fase de implementação:
+Comandos de dependências:
 
 ```bash
 # Frontend (React + TypeScript)
@@ -118,9 +128,7 @@ mvnw.cmd clean install
 
 ### 3.3 Para executar o projeto, vá para a pasta X e execute o comando
 
-No estado atual, a execução ainda não é possível porque o código não foi implementado.
-
-Fluxo previsto para a sprint de implementação:
+Fluxo de execução:
 
 ```bash
 # Backend
@@ -139,16 +147,15 @@ Depois, acessar no browser:
 
 ### Situação atual do repositório
 
-- ainda não existe módulo frontend implementado
-- ainda não existe módulo backend implementado
-- ainda não existe pipeline de build/test/deploy configurado
+- módulo frontend implementado em React + TypeScript
+- módulo backend implementado em Spring Boot
+- banco MySQL com Flyway
+- Docker Compose para banco local
 
-Próximo passo técnico previsto:
+Credenciais de teste:
 
-- Front: React + TypeScript
-- Back: Spring Boot
-- Banco: MySQL com Flyway
-- Containerização: Docker
+- e-mail: admin@alug.com
+- senha: admin123
 
 ## 4. TECNOLOGIAS
 
